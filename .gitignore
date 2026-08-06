@@ -1,0 +1,36 @@
+# macOS and Xcode user state
+.DS_Store
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# Swift / build output
+.build/
+.swiftpm/
+build/
+*.app/
+*.xcarchive/
+*.dSYM/
+*.dmg
+*.pkg
+*.zip
+
+# Credentials and local configuration
+.env
+.env.*
+*.p12
+*.mobileprovision
+*.key
+quota.json
+account-quota.json
+status.txt
+settings.json
+
+# Local backups and agent/project context
+Backups/
+.goldilocks/
+sources/
+AGENTS.md
+WIDGET_DESIGN_PLAN.md

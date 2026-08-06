@@ -1,0 +1,103 @@
+name: CPAWidget
+options:
+  bundleIdPrefix: com.cpawidget
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    CURRENT_PROJECT_VERSION: 8
+    MARKETING_VERSION: 0.5.3
+    ENABLE_HARDENED_RUNTIME: YES
+    ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+targets:
+  CPAWidgetApp:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+      - path: Core
+      - path: Providers
+      - path: Services
+      - path: Storage
+      - path: Resources
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: CPA Widget
+        CFBundleName: CPA Widget
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSApplicationCategoryType: public.app-category.utilities
+        LSMinimumSystemVersion: "14.0"
+        NSHumanReadableCopyright: "Copyright © 2026 CPA Widget"
+        CFBundleURLTypes:
+          - CFBundleURLName: com.cpawidget.app
+            CFBundleURLSchemes:
+              - cpawidget
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+    entitlements:
+      path: App/CPAWidget.entitlements
+      properties: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cpawidget.app
+        PRODUCT_NAME: CPA Widget
+        PRODUCT_MODULE_NAME: CPAWidgetApp
+        INFOPLIST_KEY_CFBundleIconName: AppIcon
+    dependencies:
+      - target: CPAWidgetExtension
+        embed: true
+
+  CPAWidgetExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: Widget
+      - path: Core/Models
+      - path: Core/Views
+      - path: Storage/CacheStore.swift
+      - path: Storage/AppSettingsStore.swift
+      - path: Resources
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: CPA Widget
+        CFBundleName: CPA Widget
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: "14.0"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Widget/CPAWidgetExtension.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.temporary-exception.files.home-relative-path.read-only:
+          - /Library/Application Support/CPAWidget/Shared/
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cpawidget.app.widget
+        PRODUCT_NAME: CPA Widget Extension
+        PRODUCT_MODULE_NAME: CPAWidgetExtension
+        SKIP_INSTALL: YES
+        APPLICATION_EXTENSION_API_ONLY: YES
+
+schemes:
+  CPAWidget:
+    build:
+      targets:
+        CPAWidgetApp: all
+        CPAWidgetExtension: all
+    run:
+      config: Debug
+      executable: CPAWidgetApp
+    archive:
+      config: Release

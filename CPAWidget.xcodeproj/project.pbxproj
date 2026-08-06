@@ -1,0 +1,674 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00C81BD687D5B8F282DB7FA8 /* CLIProxyAPIQuotaClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19DF1FB510058825509FC76C /* CLIProxyAPIQuotaClient.swift */; };
+		05CBFA7296E2CA9B79244CA1 /* GeminiProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8D7ED38364A08B12FD53629 /* GeminiProvider.swift */; };
+		07B0061102308829DD147B1D /* QuotaInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4AB2B90A4C7093DC19A609 /* QuotaInfo.swift */; };
+		0AD03B48F6AB2899D20DF746 /* QuotaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEC287E5E8BE0305C9A3319 /* QuotaManager.swift */; };
+		1657201876269C56A057F6C7 /* CPAWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 634E2BDAE133FEC7F354916A /* CPAWidget.swift */; };
+		33E8B7D36F65E762D84D4C9D /* ClaudeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5190570CBEAAF541EB86B522 /* ClaudeProvider.swift */; };
+		36688DFE415214548C393887 /* ProviderLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE08BC1B0CF1F5166D71988B /* ProviderLogo.swift */; };
+		3C8F6CE39C98EAA9041CA866 /* ConnectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3436BDABE3A5FA933420EA /* ConnectionService.swift */; };
+		46E731E71DD48DE1DF8EDFD0 /* ProviderType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA3F837F6EAB024A827A0E8 /* ProviderType.swift */; };
+		493AA20152F0D77490BB4314 /* ProviderQuotaPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D12ADB0CF23436DB6BB86 /* ProviderQuotaPayload.swift */; };
+		4B9EA7D6E4635FDA49DD6878 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FCF05CBB9C1E994C1851B5F /* ContentView.swift */; };
+		5383C2853CAC2E4F66E4C550 /* QuotaFetchingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A256E681A69DD8B75B568EBE /* QuotaFetchingClient.swift */; };
+		58546D59E558CA58AB1B6AA6 /* ProviderLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE08BC1B0CF1F5166D71988B /* ProviderLogo.swift */; };
+		5ABCF9E78D47360035E38F46 /* AccountQuotaInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C8F81C55B8DC61E61933CB /* AccountQuotaInfo.swift */; };
+		5E0B6D87F5F367272676AFBD /* CPAWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DE6387367E21D8744EBAFE1A /* CPAWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		6237E83D1F3437A142532CB1 /* CPAWidgetEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C988AEB3B77B3CB90DAA3E /* CPAWidgetEntry.swift */; };
+		67E90A918870F6FF8DA0D8C7 /* QuotaRemainingBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 817D2956C6BCA97F7B61B761 /* QuotaRemainingBar.swift */; };
+		6A4F5173D63951F9F3AEA7E6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C34B423CD5483A38388350D8 /* Assets.xcassets */; };
+		6C77E98C2A66679385DA3F9F /* CPAWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB8E1D8BEB8A6B9FBB8567F /* CPAWidgetBundle.swift */; };
+		6CC1BF59667D78C92D614905 /* TimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B50960CD06F22C3325C8D8 /* TimelineProvider.swift */; };
+		7512BD327A28B4B512C56BDC /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDF3D0812A5F1127A32196CB /* AppSettingsStore.swift */; };
+		81E4D06AB9E13760DD604511 /* AccountQuotaInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C8F81C55B8DC61E61933CB /* AccountQuotaInfo.swift */; };
+		8778B4B335900BF09E0EBA3A /* CacheStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA3140F43854CE9484B791B /* CacheStatus.swift */; };
+		89319C224BFABC6228791198 /* PROVIDER_LOGO_SOURCES.md in Resources */ = {isa = PBXBuildFile; fileRef = 21D4C90B1CD6E9D9FB88069D /* PROVIDER_LOGO_SOURCES.md */; };
+		8B52D2211C42B8B03AC5C050 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C34B423CD5483A38388350D8 /* Assets.xcassets */; };
+		8B56B892A1DE1C4BB303A67E /* CPAApplicationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 670D347CEE46FB6370A4AC7C /* CPAApplicationDelegate.swift */; };
+		8B90065A11646A573825C1B7 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D63CDF08495934A821B4401B /* AppLanguage.swift */; };
+		937E0C20485BD50A8776699E /* WidgetConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4588956B6F3C0F37E4DF2C /* WidgetConfiguration.swift */; };
+		9779F15B16B8E7BEBB2109A9 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D826102DB1694C074794808 /* KeychainManager.swift */; };
+		9DE7C515B9C57DFB16855044 /* CPAWidgetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B1245EB9CBECC5EE6AF861 /* CPAWidgetApp.swift */; };
+		A1D7C9DBFB7E4CED959F3012 /* QuotaProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E7EEE81F52DDB6685E94B5 /* QuotaProvider.swift */; };
+		BAF983926D46E4AB794813BD /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A28CCC8EFEF9294D465C6F19 /* AppModel.swift */; };
+		BD77CE1538E1ECC486E8A03E /* CacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D29BB0A53F869074F1B00D6 /* CacheStore.swift */; };
+		BE28F6624BDD07F378898C3C /* MockQuotaProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FB1056E854C4656279E4AB0 /* MockQuotaProvider.swift */; };
+		C6782E89A43A5BF5BD17BCE2 /* QuotaInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4AB2B90A4C7093DC19A609 /* QuotaInfo.swift */; };
+		CA262F4C989960D3E2BDC689 /* CodexProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37676964A25AE4821329A17D /* CodexProvider.swift */; };
+		CF2C3AF3247F99327B3F7DFD /* CPAWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9369522F1D5810B56E8E7AA0 /* CPAWidgetView.swift */; };
+		D00D74EC776B05A29C39F660 /* CacheStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA3140F43854CE9484B791B /* CacheStatus.swift */; };
+		D775B0130D79BA3DFC96E897 /* ProviderType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA3F837F6EAB024A827A0E8 /* ProviderType.swift */; };
+		DCAF945013E7473A73C8CA26 /* QuotaWindowTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA7EEF0E325484223367978A /* QuotaWindowTimelineView.swift */; };
+		E04CD6D0A91643951B0B45FB /* ProviderQuotaPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4D12ADB0CF23436DB6BB86 /* ProviderQuotaPayload.swift */; };
+		E1512B9B9E8A5EDB0765CCFC /* KimiProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1932C9550ED9A4A7DA1380B /* KimiProvider.swift */; };
+		E5ED63461B00C7585783B4A9 /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDF3D0812A5F1127A32196CB /* AppSettingsStore.swift */; };
+		EFE4170DECD0065E422AA1BB /* PROVIDER_LOGO_SOURCES.md in Resources */ = {isa = PBXBuildFile; fileRef = 21D4C90B1CD6E9D9FB88069D /* PROVIDER_LOGO_SOURCES.md */; };
+		F63C010A95BBF86FB1B4ABD1 /* RefreshService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3971F7C3A50D8F87B866E6A9 /* RefreshService.swift */; };
+		F67458009F8543098287B862 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D63CDF08495934A821B4401B /* AppLanguage.swift */; };
+		FBDBE9A8D2A79420D09B8416 /* CacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D29BB0A53F869074F1B00D6 /* CacheStore.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BD75A9691E42FEC404560F52 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 267B06442EA6FA1C31C5C3B0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 889D25D2753B46B831510BA4;
+			remoteInfo = CPAWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9F0A9DB815290EE0AC79D9B2 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				5E0B6D87F5F367272676AFBD /* CPAWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0122A13FB4A353A07F3BB7A6 /* CPAWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CPAWidgetExtension.entitlements; sourceTree = "<group>"; };
+		0F3436BDABE3A5FA933420EA /* ConnectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionService.swift; sourceTree = "<group>"; };
+		11E7EEE81F52DDB6685E94B5 /* QuotaProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotaProvider.swift; sourceTree = "<group>"; };
+		19DF1FB510058825509FC76C /* CLIProxyAPIQuotaClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIProxyAPIQuotaClient.swift; sourceTree = "<group>"; };
+		1AA3140F43854CE9484B791B /* CacheStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStatus.swift; sourceTree = "<group>"; };
+		20C8F81C55B8DC61E61933CB /* AccountQuotaInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountQuotaInfo.swift; sourceTree = "<group>"; };
+		21B50960CD06F22C3325C8D8 /* TimelineProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineProvider.swift; sourceTree = "<group>"; };
+		21D4C90B1CD6E9D9FB88069D /* PROVIDER_LOGO_SOURCES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PROVIDER_LOGO_SOURCES.md; sourceTree = "<group>"; };
+		22A7AFBDAE65C2DA21914E8C /* CPAWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CPAWidget.entitlements; sourceTree = "<group>"; };
+		27074DCCC7D86A0CC72C4C0E /* CPAWidgetApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CPAWidgetApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2CB8E1D8BEB8A6B9FBB8567F /* CPAWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPAWidgetBundle.swift; sourceTree = "<group>"; };
+		2D826102DB1694C074794808 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		2FCF05CBB9C1E994C1851B5F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		37676964A25AE4821329A17D /* CodexProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexProvider.swift; sourceTree = "<group>"; };
+		3971F7C3A50D8F87B866E6A9 /* RefreshService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshService.swift; sourceTree = "<group>"; };
+		3A4588956B6F3C0F37E4DF2C /* WidgetConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConfiguration.swift; sourceTree = "<group>"; };
+		3EEC287E5E8BE0305C9A3319 /* QuotaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotaManager.swift; sourceTree = "<group>"; };
+		3FB1056E854C4656279E4AB0 /* MockQuotaProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockQuotaProvider.swift; sourceTree = "<group>"; };
+		5190570CBEAAF541EB86B522 /* ClaudeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeProvider.swift; sourceTree = "<group>"; };
+		634E2BDAE133FEC7F354916A /* CPAWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPAWidget.swift; sourceTree = "<group>"; };
+		670D347CEE46FB6370A4AC7C /* CPAApplicationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPAApplicationDelegate.swift; sourceTree = "<group>"; };
+		6E4D12ADB0CF23436DB6BB86 /* ProviderQuotaPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderQuotaPayload.swift; sourceTree = "<group>"; };
+		75B1245EB9CBECC5EE6AF861 /* CPAWidgetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPAWidgetApp.swift; sourceTree = "<group>"; };
+		7D29BB0A53F869074F1B00D6 /* CacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStore.swift; sourceTree = "<group>"; };
+		817D2956C6BCA97F7B61B761 /* QuotaRemainingBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotaRemainingBar.swift; sourceTree = "<group>"; };
+		92C988AEB3B77B3CB90DAA3E /* CPAWidgetEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPAWidgetEntry.swift; sourceTree = "<group>"; };
+		9369522F1D5810B56E8E7AA0 /* CPAWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPAWidgetView.swift; sourceTree = "<group>"; };
+		A256E681A69DD8B75B568EBE /* QuotaFetchingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotaFetchingClient.swift; sourceTree = "<group>"; };
+		A28CCC8EFEF9294D465C6F19 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		C34B423CD5483A38388350D8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CDA3F837F6EAB024A827A0E8 /* ProviderType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderType.swift; sourceTree = "<group>"; };
+		D63CDF08495934A821B4401B /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
+		DE6387367E21D8744EBAFE1A /* CPAWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CPAWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E6E54A3A0FDE7775357CC5EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		EE08BC1B0CF1F5166D71988B /* ProviderLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderLogo.swift; sourceTree = "<group>"; };
+		F1932C9550ED9A4A7DA1380B /* KimiProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KimiProvider.swift; sourceTree = "<group>"; };
+		F8D7ED38364A08B12FD53629 /* GeminiProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiProvider.swift; sourceTree = "<group>"; };
+		F8ED5C9D4E5018EFF2586AC1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FA7EEF0E325484223367978A /* QuotaWindowTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotaWindowTimelineView.swift; sourceTree = "<group>"; };
+		FB4AB2B90A4C7093DC19A609 /* QuotaInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotaInfo.swift; sourceTree = "<group>"; };
+		FDF3D0812A5F1127A32196CB /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		1D680B683B50A25CA0F46DE1 /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				634E2BDAE133FEC7F354916A /* CPAWidget.swift */,
+				2CB8E1D8BEB8A6B9FBB8567F /* CPAWidgetBundle.swift */,
+				92C988AEB3B77B3CB90DAA3E /* CPAWidgetEntry.swift */,
+				0122A13FB4A353A07F3BB7A6 /* CPAWidgetExtension.entitlements */,
+				9369522F1D5810B56E8E7AA0 /* CPAWidgetView.swift */,
+				E6E54A3A0FDE7775357CC5EC /* Info.plist */,
+				21B50960CD06F22C3325C8D8 /* TimelineProvider.swift */,
+				3A4588956B6F3C0F37E4DF2C /* WidgetConfiguration.swift */,
+			);
+			path = Widget;
+			sourceTree = "<group>";
+		};
+		27D447DC00625C8415E97FA2 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				FDF3D0812A5F1127A32196CB /* AppSettingsStore.swift */,
+				7D29BB0A53F869074F1B00D6 /* CacheStore.swift */,
+				2D826102DB1694C074794808 /* KeychainManager.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		3C2D148146B287DCAAB32A54 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A28CCC8EFEF9294D465C6F19 /* AppModel.swift */,
+				2FCF05CBB9C1E994C1851B5F /* ContentView.swift */,
+				670D347CEE46FB6370A4AC7C /* CPAApplicationDelegate.swift */,
+				22A7AFBDAE65C2DA21914E8C /* CPAWidget.entitlements */,
+				75B1245EB9CBECC5EE6AF861 /* CPAWidgetApp.swift */,
+				F8ED5C9D4E5018EFF2586AC1 /* Info.plist */,
+				817D2956C6BCA97F7B61B761 /* QuotaRemainingBar.swift */,
+				FA7EEF0E325484223367978A /* QuotaWindowTimelineView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		8C67D357B13899342369E96A = {
+			isa = PBXGroup;
+			children = (
+				3C2D148146B287DCAAB32A54 /* App */,
+				B874C515373E5B7D8334D36D /* Core */,
+				90F898089E1D8FC1968C4378 /* Providers */,
+				D6B0FE99FFF95B466978D657 /* Resources */,
+				C25FA4956CC18DE582ADF6C2 /* Services */,
+				27D447DC00625C8415E97FA2 /* Storage */,
+				1D680B683B50A25CA0F46DE1 /* Widget */,
+				D54071842C4DCEB62824807B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		90F898089E1D8FC1968C4378 /* Providers */ = {
+			isa = PBXGroup;
+			children = (
+				5190570CBEAAF541EB86B522 /* ClaudeProvider.swift */,
+				19DF1FB510058825509FC76C /* CLIProxyAPIQuotaClient.swift */,
+				37676964A25AE4821329A17D /* CodexProvider.swift */,
+				F8D7ED38364A08B12FD53629 /* GeminiProvider.swift */,
+				F1932C9550ED9A4A7DA1380B /* KimiProvider.swift */,
+				3FB1056E854C4656279E4AB0 /* MockQuotaProvider.swift */,
+			);
+			path = Providers;
+			sourceTree = "<group>";
+		};
+		A053AACF1168132B1C07A9F6 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				20C8F81C55B8DC61E61933CB /* AccountQuotaInfo.swift */,
+				D63CDF08495934A821B4401B /* AppLanguage.swift */,
+				1AA3140F43854CE9484B791B /* CacheStatus.swift */,
+				6E4D12ADB0CF23436DB6BB86 /* ProviderQuotaPayload.swift */,
+				CDA3F837F6EAB024A827A0E8 /* ProviderType.swift */,
+				FB4AB2B90A4C7093DC19A609 /* QuotaInfo.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B874C515373E5B7D8334D36D /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				A053AACF1168132B1C07A9F6 /* Models */,
+				F238C30E797E2F84F829C440 /* Protocols */,
+				D72238D574417ED69ADCA8FB /* Views */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		C25FA4956CC18DE582ADF6C2 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				0F3436BDABE3A5FA933420EA /* ConnectionService.swift */,
+				3EEC287E5E8BE0305C9A3319 /* QuotaManager.swift */,
+				3971F7C3A50D8F87B866E6A9 /* RefreshService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		D54071842C4DCEB62824807B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				27074DCCC7D86A0CC72C4C0E /* CPAWidgetApp.app */,
+				DE6387367E21D8744EBAFE1A /* CPAWidgetExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D6B0FE99FFF95B466978D657 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C34B423CD5483A38388350D8 /* Assets.xcassets */,
+				21D4C90B1CD6E9D9FB88069D /* PROVIDER_LOGO_SOURCES.md */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		D72238D574417ED69ADCA8FB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				EE08BC1B0CF1F5166D71988B /* ProviderLogo.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F238C30E797E2F84F829C440 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				A256E681A69DD8B75B568EBE /* QuotaFetchingClient.swift */,
+				11E7EEE81F52DDB6685E94B5 /* QuotaProvider.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		32B47D991FF68AE4859CC010 /* CPAWidgetApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AFB77A94B2A72FA241C45FC8 /* Build configuration list for PBXNativeTarget "CPAWidgetApp" */;
+			buildPhases = (
+				9B2C375D6368C2CA77B1430A /* Sources */,
+				803F99046BD6564317F7B52F /* Resources */,
+				9F0A9DB815290EE0AC79D9B2 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6FA2DC02B8494DE03D8561AF /* PBXTargetDependency */,
+			);
+			name = CPAWidgetApp;
+			packageProductDependencies = (
+			);
+			productName = CPAWidgetApp;
+			productReference = 27074DCCC7D86A0CC72C4C0E /* CPAWidgetApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		889D25D2753B46B831510BA4 /* CPAWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9C57B86031355E3A1DB96C8C /* Build configuration list for PBXNativeTarget "CPAWidgetExtension" */;
+			buildPhases = (
+				7D2591A6B4F8FA0D449271C1 /* Sources */,
+				C6F1B9A352B0407AC2D11FFA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CPAWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = CPAWidgetExtension;
+			productReference = DE6387367E21D8744EBAFE1A /* CPAWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		267B06442EA6FA1C31C5C3B0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					32B47D991FF68AE4859CC010 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					889D25D2753B46B831510BA4 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 21B99F9A94B4DB603F1DF566 /* Build configuration list for PBXProject "CPAWidget" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 8C67D357B13899342369E96A;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = D54071842C4DCEB62824807B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				32B47D991FF68AE4859CC010 /* CPAWidgetApp */,
+				889D25D2753B46B831510BA4 /* CPAWidgetExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		803F99046BD6564317F7B52F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6A4F5173D63951F9F3AEA7E6 /* Assets.xcassets in Resources */,
+				89319C224BFABC6228791198 /* PROVIDER_LOGO_SOURCES.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C6F1B9A352B0407AC2D11FFA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B52D2211C42B8B03AC5C050 /* Assets.xcassets in Resources */,
+				EFE4170DECD0065E422AA1BB /* PROVIDER_LOGO_SOURCES.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7D2591A6B4F8FA0D449271C1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5ABCF9E78D47360035E38F46 /* AccountQuotaInfo.swift in Sources */,
+				F67458009F8543098287B862 /* AppLanguage.swift in Sources */,
+				7512BD327A28B4B512C56BDC /* AppSettingsStore.swift in Sources */,
+				1657201876269C56A057F6C7 /* CPAWidget.swift in Sources */,
+				6C77E98C2A66679385DA3F9F /* CPAWidgetBundle.swift in Sources */,
+				6237E83D1F3437A142532CB1 /* CPAWidgetEntry.swift in Sources */,
+				CF2C3AF3247F99327B3F7DFD /* CPAWidgetView.swift in Sources */,
+				8778B4B335900BF09E0EBA3A /* CacheStatus.swift in Sources */,
+				FBDBE9A8D2A79420D09B8416 /* CacheStore.swift in Sources */,
+				58546D59E558CA58AB1B6AA6 /* ProviderLogo.swift in Sources */,
+				E04CD6D0A91643951B0B45FB /* ProviderQuotaPayload.swift in Sources */,
+				D775B0130D79BA3DFC96E897 /* ProviderType.swift in Sources */,
+				07B0061102308829DD147B1D /* QuotaInfo.swift in Sources */,
+				6CC1BF59667D78C92D614905 /* TimelineProvider.swift in Sources */,
+				937E0C20485BD50A8776699E /* WidgetConfiguration.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B2C375D6368C2CA77B1430A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				81E4D06AB9E13760DD604511 /* AccountQuotaInfo.swift in Sources */,
+				8B90065A11646A573825C1B7 /* AppLanguage.swift in Sources */,
+				BAF983926D46E4AB794813BD /* AppModel.swift in Sources */,
+				E5ED63461B00C7585783B4A9 /* AppSettingsStore.swift in Sources */,
+				00C81BD687D5B8F282DB7FA8 /* CLIProxyAPIQuotaClient.swift in Sources */,
+				8B56B892A1DE1C4BB303A67E /* CPAApplicationDelegate.swift in Sources */,
+				9DE7C515B9C57DFB16855044 /* CPAWidgetApp.swift in Sources */,
+				D00D74EC776B05A29C39F660 /* CacheStatus.swift in Sources */,
+				BD77CE1538E1ECC486E8A03E /* CacheStore.swift in Sources */,
+				33E8B7D36F65E762D84D4C9D /* ClaudeProvider.swift in Sources */,
+				CA262F4C989960D3E2BDC689 /* CodexProvider.swift in Sources */,
+				3C8F6CE39C98EAA9041CA866 /* ConnectionService.swift in Sources */,
+				4B9EA7D6E4635FDA49DD6878 /* ContentView.swift in Sources */,
+				05CBFA7296E2CA9B79244CA1 /* GeminiProvider.swift in Sources */,
+				9779F15B16B8E7BEBB2109A9 /* KeychainManager.swift in Sources */,
+				E1512B9B9E8A5EDB0765CCFC /* KimiProvider.swift in Sources */,
+				BE28F6624BDD07F378898C3C /* MockQuotaProvider.swift in Sources */,
+				36688DFE415214548C393887 /* ProviderLogo.swift in Sources */,
+				493AA20152F0D77490BB4314 /* ProviderQuotaPayload.swift in Sources */,
+				46E731E71DD48DE1DF8EDFD0 /* ProviderType.swift in Sources */,
+				5383C2853CAC2E4F66E4C550 /* QuotaFetchingClient.swift in Sources */,
+				C6782E89A43A5BF5BD17BCE2 /* QuotaInfo.swift in Sources */,
+				0AD03B48F6AB2899D20DF746 /* QuotaManager.swift in Sources */,
+				A1D7C9DBFB7E4CED959F3012 /* QuotaProvider.swift in Sources */,
+				67E90A918870F6FF8DA0D8C7 /* QuotaRemainingBar.swift in Sources */,
+				DCAF945013E7473A73C8CA26 /* QuotaWindowTimelineView.swift in Sources */,
+				F63C010A95BBF86FB1B4ABD1 /* RefreshService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6FA2DC02B8494DE03D8561AF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 889D25D2753B46B831510BA4 /* CPAWidgetExtension */;
+			targetProxy = BD75A9691E42FEC404560F52 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0B04C2D11ED9A4CFD4B0DA20 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 8;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.5.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		20A0A3AB10C61F069097CD33 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/CPAWidget.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = App/Info.plist;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cpawidget.app;
+				PRODUCT_MODULE_NAME = CPAWidgetApp;
+				PRODUCT_NAME = "CPA Widget";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		2557CAEC6DA211625B7D57ED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/CPAWidget.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = App/Info.plist;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cpawidget.app;
+				PRODUCT_MODULE_NAME = CPAWidgetApp;
+				PRODUCT_NAME = "CPA Widget";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		8333E3DE9B9B180E6A7C64A6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Widget/CPAWidgetExtension.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Widget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cpawidget.app.widget;
+				PRODUCT_MODULE_NAME = CPAWidgetExtension;
+				PRODUCT_NAME = "CPA Widget Extension";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		C5F647BD1C6E7AE106A251C2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 8;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.5.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		DECB463FBCDE9DAA9D6668E8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Widget/CPAWidgetExtension.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Widget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cpawidget.app.widget;
+				PRODUCT_MODULE_NAME = CPAWidgetExtension;
+				PRODUCT_NAME = "CPA Widget Extension";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		21B99F9A94B4DB603F1DF566 /* Build configuration list for PBXProject "CPAWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C5F647BD1C6E7AE106A251C2 /* Debug */,
+				0B04C2D11ED9A4CFD4B0DA20 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9C57B86031355E3A1DB96C8C /* Build configuration list for PBXNativeTarget "CPAWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8333E3DE9B9B180E6A7C64A6 /* Debug */,
+				DECB463FBCDE9DAA9D6668E8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AFB77A94B2A72FA241C45FC8 /* Build configuration list for PBXNativeTarget "CPAWidgetApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				20A0A3AB10C61F069097CD33 /* Debug */,
+				2557CAEC6DA211625B7D57ED /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 267B06442EA6FA1C31C5C3B0 /* Project object */;
+}
