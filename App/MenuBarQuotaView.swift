@@ -66,6 +66,7 @@ struct MenuBarQuotaPanel: View {
                     }
                 }
             }
+            .background(MenuBarAutoHidingScrollers())
             .frame(height: panelContentHeight(summary: summary, configuration: configuration))
 
             Divider()
@@ -333,6 +334,182 @@ struct MenuBarQuotaPanel: View {
 
     private func t(_ chinese: String, _ english: String) -> String {
         model.language.text(chinese, english)
+    }
+}
+
+/// SwiftUI follows the user's global scrollbar preference, which can leave a
+/// permanent scrollbar inside this compact card. Find the actual AppKit scroll
+/// view and explicitly reveal its overlay scroller only while content moves.
+private struct MenuBarAutoHidingScrollers: NSViewRepresentable {
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeNSView(context: Context) -> NSView {
+        let view = AttachmentProbe(frame: .zero)
+        view.onAttachmentChanged = { [weak view, weak coordinator = context.coordinator] in
+            guard let view else { return }
+            coordinator?.attach(to: view)
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        context.coordinator.attach(to: nsView)
+    }
+
+    static func dismantleNSView(_ nsView: NSView, coordinator: Coordinator) {
+        coordinator.detach()
+    }
+
+    final class Coordinator: NSObject {
+        private weak var scrollView: NSScrollView?
+        private var hideTask: DispatchWorkItem?
+
+        func attach(to probe: NSView) {
+            DispatchQueue.main.async { [weak self, weak probe] in
+                guard let self, let probe,
+                      let target = self.findScrollView(containing: probe),
+                      self.scrollView !== target else { return }
+
+                self.detach()
+                self.scrollView = target
+                target.scrollerStyle = .overlay
+                target.autohidesScrollers = false
+                target.hasHorizontalScroller = false
+                target.contentView.postsBoundsChangedNotifications = true
+
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.scrollDidMove(_:)),
+                    name: NSView.boundsDidChangeNotification,
+                    object: target.contentView
+                )
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.scrollDidMove(_:)),
+                    name: NSScrollView.willStartLiveScrollNotification,
+                    object: target
+                )
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.scrollDidMove(_:)),
+                    name: NSScrollView.didLiveScrollNotification,
+                    object: target
+                )
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.scrollDidEnd(_:)),
+                    name: NSScrollView.didEndLiveScrollNotification,
+                    object: target
+                )
+
+                self.hideScroller(animated: false)
+            }
+        }
+
+        func detach() {
+            hideTask?.cancel()
+            hideTask = nil
+            NotificationCenter.default.removeObserver(self)
+            scrollView = nil
+        }
+
+        deinit {
+            detach()
+        }
+
+        @objc private func scrollDidMove(_ notification: Notification) {
+            showScroller()
+            scheduleHide()
+        }
+
+        @objc private func scrollDidEnd(_ notification: Notification) {
+            scheduleHide()
+        }
+
+        private func showScroller() {
+            guard let scroller = scrollView?.verticalScroller else { return }
+            hideTask?.cancel()
+            scroller.isHidden = false
+            scroller.alphaValue = 1
+        }
+
+        private func scheduleHide() {
+            hideTask?.cancel()
+            let task = DispatchWorkItem { [weak self] in
+                self?.hideScroller(animated: true)
+            }
+            hideTask = task
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8, execute: task)
+        }
+
+        private func hideScroller(animated: Bool) {
+            guard let scroller = scrollView?.verticalScroller else { return }
+            hideTask?.cancel()
+            hideTask = nil
+
+            let finish = { [weak scroller] in
+                guard let scroller, scroller.alphaValue == 0 else { return }
+                scroller.isHidden = true
+            }
+
+            guard animated else {
+                scroller.alphaValue = 0
+                scroller.isHidden = true
+                return
+            }
+
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.18
+                scroller.animator().alphaValue = 0
+            } completionHandler: {
+                finish()
+            }
+        }
+
+        private func findScrollView(containing probe: NSView) -> NSScrollView? {
+            if let enclosing = probe.enclosingScrollView {
+                return enclosing
+            }
+
+            var ancestor = probe.superview
+            while let current = ancestor {
+                if let scrollView = current as? NSScrollView {
+                    return scrollView
+                }
+                ancestor = current.superview
+            }
+
+            guard let root = probe.window?.contentView else { return nil }
+            let probeRect = probe.convert(probe.bounds, to: nil)
+            let probeCenter = NSPoint(x: probeRect.midX, y: probeRect.midY)
+            return scrollViews(in: root)
+                .filter { $0.convert($0.bounds, to: nil).contains(probeCenter) }
+                .min { $0.bounds.width * $0.bounds.height < $1.bounds.width * $1.bounds.height }
+        }
+
+        private func scrollViews(in view: NSView) -> [NSScrollView] {
+            var matches = view.subviews.flatMap(scrollViews(in:))
+            if let scrollView = view as? NSScrollView {
+                matches.append(scrollView)
+            }
+            return matches
+        }
+    }
+
+    final class AttachmentProbe: NSView {
+        var onAttachmentChanged: (() -> Void)?
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            onAttachmentChanged?()
+        }
+
+        override func viewDidMoveToSuperview() {
+            super.viewDidMoveToSuperview()
+            onAttachmentChanged?()
+        }
     }
 }
 
