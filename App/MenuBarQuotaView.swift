@@ -40,7 +40,7 @@ struct MenuBarQuotaPanel: View {
         VStack(alignment: .leading, spacing: 12) {
             header(summary: summary)
 
-            if let updatedAt = summary.accounts.map(\.updatedAt).max() {
+            if let updatedAt = summary.combinedAccounts.map(\.updatedAt).max() {
                 Text(t(
                     "更新于 \(model.language.relativeString(for: updatedAt))",
                     "Updated \(model.language.relativeString(for: updatedAt))"
@@ -105,28 +105,42 @@ struct MenuBarQuotaPanel: View {
         case .aggregate:
             VStack(alignment: .leading, spacing: 9) {
                 panelSectionHeader(t("总额度", "Quota summary"), symbol: "gauge.with.dots.needle.67percent")
-                aggregateQuota(summary: summary, display: configuration.display)
+                aggregateQuota(summary: summary)
             }
         case .timeline:
             TimelineView(.periodic(from: .now, by: 60)) { context in
-                MenuBarQuotaTimelineSection(
-                    accounts: summary.accounts,
-                    scale: configuration.effectivePanelTimelineScale,
-                    accountLimit: configuration.effectivePanelTimelineAccountLimit,
-                    language: model.language,
-                    referenceDate: context.date
-                )
+                VStack(alignment: .leading, spacing: 12) {
+                    MenuBarQuotaTimelineSection(
+                        title: t("第一配额 · 配额时间线", "Quota 1 · timeline"),
+                        accounts: summary.primarySource.accounts,
+                        scale: configuration.effectivePanelTimelineScale,
+                        accountLimit: configuration.effectivePanelTimelineAccountLimit,
+                        language: model.language,
+                        referenceDate: context.date
+                    )
+                    Divider()
+                    MenuBarQuotaTimelineSection(
+                        title: t("第二配额 · 配额时间线", "Quota 2 · timeline"),
+                        accounts: summary.secondarySource.accounts,
+                        scale: configuration.effectivePanelTimelineScale,
+                        accountLimit: configuration.effectivePanelTimelineAccountLimit,
+                        language: model.language,
+                        referenceDate: context.date
+                    )
+                }
             }
         case .accounts:
             VStack(alignment: .leading, spacing: 9) {
                 panelSectionHeader(t("账号详情", "Account details"), symbol: "person.text.rectangle")
-                if summary.accounts.isEmpty {
-                    Text(t("暂无所选账号数据。", "No selected account data."))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    accountRows(summary.accounts)
-                }
+                panelAccountGroup(
+                    title: t("第一配额", "Quota 1"),
+                    accounts: summary.primarySource.accounts
+                )
+                Divider()
+                panelAccountGroup(
+                    title: t("第二配额", "Quota 2"),
+                    accounts: summary.secondarySource.accounts
+                )
             }
         }
     }
@@ -137,6 +151,22 @@ struct MenuBarQuotaPanel: View {
             .foregroundStyle(.secondary)
     }
 
+    @ViewBuilder
+    private func panelAccountGroup(title: String, accounts: [AccountQuotaInfo]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.tertiary)
+            if accounts.isEmpty {
+                Text(t("暂无所选账号数据。", "No selected account data."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                accountRows(accounts)
+            }
+        }
+    }
+
     private func panelContentHeight(
         summary: MenuBarQuotaSummary,
         configuration: MenuBarConfiguration
@@ -145,17 +175,25 @@ struct MenuBarQuotaPanel: View {
         for section in configuration.visiblePanelSections {
             switch section {
             case .aggregate:
-                estimate += summary.primary == nil ? 135 : 150
+                estimate += 355
             case .timeline:
-                let accountCount = min(
-                    summary.accounts.count,
+                let primaryCount = min(
+                    summary.primarySource.accounts.count,
                     configuration.effectivePanelTimelineAccountLimit
                 )
-                estimate += 44 + CGFloat(max(accountCount, 1)) * 102
+                let secondaryCount = min(
+                    summary.secondarySource.accounts.count,
+                    configuration.effectivePanelTimelineAccountLimit
+                )
+                estimate += 92 + CGFloat(max(primaryCount, 1) + max(secondaryCount, 1)) * 102
             case .accounts:
-                estimate += 32 + summary.accounts.reduce(CGFloat.zero) { height, account in
+                let primaryHeight = summary.primarySource.accounts.reduce(CGFloat.zero) { height, account in
                     height + 58 + CGFloat(min(account.windows.count, 2)) * 21
-                } + CGFloat(max(0, summary.accounts.count - 1)) * 10
+                } + CGFloat(max(0, summary.primarySource.accounts.count - 1)) * 10
+                let secondaryHeight = summary.secondarySource.accounts.reduce(CGFloat.zero) { height, account in
+                    height + 58 + CGFloat(min(account.windows.count, 2)) * 21
+                } + CGFloat(max(0, summary.secondarySource.accounts.count - 1)) * 10
+                estimate += 78 + primaryHeight + secondaryHeight
             }
         }
         estimate += CGFloat(max(0, configuration.visiblePanelSections.count - 1)) * 15
@@ -197,32 +235,57 @@ struct MenuBarQuotaPanel: View {
 
     @ViewBuilder
     private func aggregateQuota(
-        summary: MenuBarQuotaSummary,
-        display: MenuBarConfiguration.Display
+        summary: MenuBarQuotaSummary
     ) -> some View {
-        if let primary = summary.primary {
-            VStack(alignment: .leading, spacing: 8) {
-                MenuBarAggregateRow(
-                    window: primary,
-                    color: menuBarProviderColor(primary.provider),
-                    language: model.language,
-                    prominent: true
+        VStack(alignment: .leading, spacing: 10) {
+            if let percentage = summary.combinedRemainingPercentage {
+                MenuBarCombinedQuotaRow(
+                    percentage: percentage,
+                    sourceCount: summary.availableChannelCount,
+                    language: model.language
                 )
-                if display.showsSecondaryQuota, let secondary = summary.secondary {
-                    MenuBarAggregateRow(
-                        window: secondary,
-                        color: menuBarProviderColor(secondary.provider).opacity(0.82),
-                        language: model.language
-                    )
-                }
+                Divider()
             }
-        } else {
-            ContentUnavailableView(
-                model.cacheStatus.displayMessage(language: model.language),
-                systemImage: emptyStateSymbol,
-                description: Text(t("刷新后将在这里显示所选账号的配额。", "Refresh to show quota for the selected accounts."))
+            panelAggregateGroup(
+                title: t("第一配额", "Quota 1"),
+                window: summary.primary,
+                color: summary.primary.map { menuBarProviderColor($0.provider) } ?? .secondary,
+                prominent: true
             )
-            .frame(maxWidth: .infinity, minHeight: 118)
+            Divider()
+            panelAggregateGroup(
+                title: t("第二配额", "Quota 2"),
+                window: summary.secondary,
+                color: summary.secondary.map { menuBarProviderColor($0.provider).opacity(0.82) } ?? .secondary,
+                prominent: false
+            )
+        }
+    }
+
+    @ViewBuilder
+    private func panelAggregateGroup(
+        title: String,
+        window: AggregatedQuotaWindow?,
+        color: Color,
+        prominent: Bool
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.tertiary)
+            if let window {
+                MenuBarAggregateRow(
+                    window: window,
+                    color: color,
+                    language: model.language,
+                    prominent: prominent
+                )
+            } else {
+                Text(t("暂无所选配额数据。", "No selected quota data."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+            }
         }
     }
 
@@ -503,6 +566,7 @@ struct MenuBarConfigurationEditor: View {
                         Text(t("最多 \(count) 个", "Up to \(count)")).tag(count)
                     }
                 }
+
             }
         }
         .padding(10)
@@ -849,9 +913,21 @@ private struct MenuBarQuotaSummary {
     }
 
     var accounts: [AccountQuotaInfo] { primarySource.accounts }
+    var combinedAccounts: [AccountQuotaInfo] {
+        var seen: Set<String> = []
+        return (primarySource.accounts + secondarySource.accounts).filter { account in
+            seen.insert("\(account.provider.rawValue):\(account.id)").inserted
+        }
+    }
     var windows: [AggregatedQuotaWindow] { primarySource.windows }
     var primary: AggregatedQuotaWindow? { primarySource.window }
     var secondary: AggregatedQuotaWindow? { secondarySource.window }
+    var availableChannelCount: Int { [primary, secondary].compactMap { $0 }.count }
+    var combinedRemainingPercentage: Int? {
+        let values = [primary, secondary].compactMap { $0?.remainingPercentage }
+        guard !values.isEmpty else { return nil }
+        return Int((Double(values.reduce(0, +)) / Double(values.count)).rounded())
+    }
 
     func title(language: AppLanguage) -> String {
         switch configuration.scope {
@@ -1809,6 +1885,35 @@ private struct MenuBarAggregateRow: View {
     }
 }
 
+private struct MenuBarCombinedQuotaRow: View {
+    let percentage: Int
+    let sourceCount: Int
+    let language: AppLanguage
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(language.text("综合余量", "Combined remaining"))
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Text("\(percentage)%")
+                    .font(.title2.monospacedDigit().weight(.bold))
+            }
+            QuotaRemainingBar(percentage: percentage, color: .accentColor)
+            Text(language.text(
+                sourceCount == 2
+                    ? "第一配额与第二配额的平均值"
+                    : "当前仅有一条可用配额，暂以该配额显示",
+                sourceCount == 2
+                    ? "Average of quota 1 and quota 2"
+                    : "Only one quota is available; showing that value"
+            ))
+            .font(.caption2)
+            .foregroundStyle(.tertiary)
+        }
+    }
+}
+
 private struct MenuBarAccountRow: View {
     let account: AccountQuotaInfo
     let language: AppLanguage
@@ -1851,6 +1956,7 @@ private struct MenuBarAccountRow: View {
 }
 
 private struct MenuBarQuotaTimelineSection: View {
+    let title: String
     let accounts: [AccountQuotaInfo]
     let scale: MenuBarConfiguration.PanelTimelineScale
     let accountLimit: Int
@@ -1876,10 +1982,7 @@ private struct MenuBarQuotaTimelineSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 9) {
             HStack {
-                Label(
-                    language.text("配额时间线", "Quota timeline"),
-                    systemImage: "calendar.day.timeline.leading"
-                )
+                Label(title, systemImage: "calendar.day.timeline.leading")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
 
