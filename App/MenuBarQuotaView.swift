@@ -204,20 +204,14 @@ struct MenuBarQuotaPanel: View {
             VStack(alignment: .leading, spacing: 8) {
                 MenuBarAggregateRow(
                     window: primary,
-                    color: summary.color,
+                    color: menuBarProviderColor(primary.provider),
                     language: model.language,
                     prominent: true
                 )
-                if let spark = summary.spark, spark.id != primary.id {
-                    MenuBarAggregateRow(
-                        window: spark,
-                        color: summary.color.opacity(0.82),
-                        language: model.language
-                    )
-                } else if display.showsSecondaryQuota, let secondary = summary.secondary {
+                if display.showsSecondaryQuota, let secondary = summary.secondary {
                     MenuBarAggregateRow(
                         window: secondary,
-                        color: summary.color.opacity(0.82),
+                        color: menuBarProviderColor(secondary.provider).opacity(0.82),
                         language: model.language
                     )
                 }
@@ -282,6 +276,11 @@ struct MenuBarQuotaPanel: View {
 struct MenuBarConfigurationEditor: View {
     @EnvironmentObject private var model: AppModel
 
+    private enum ChannelSlot {
+        case primary
+        case secondary
+    }
+
     var body: some View {
         let summary = MenuBarQuotaSummary(
             configuration: configuration,
@@ -298,27 +297,8 @@ struct MenuBarConfigurationEditor: View {
             }
 
             if configuration.isEnabled {
-                Picker(t("显示范围", "Scope"), selection: binding(\.scope)) {
-                    Text(t("全部账号", "All accounts")).tag(MenuBarConfiguration.Scope.allAccounts)
-                    Text(t("指定服务", "Provider")).tag(MenuBarConfiguration.Scope.provider)
-                    Text(t("指定账号", "Accounts")).tag(MenuBarConfiguration.Scope.accounts)
-                }
-
-                if configuration.scope != .allAccounts {
-                    Picker(t("服务", "Provider"), selection: binding(\.provider)) {
-                        ForEach(ProviderType.allCases) { provider in
-                            Text(provider.displayName).tag(provider)
-                        }
-                    }
-                }
-
-                if configuration.scope == .accounts {
-                    accountPicker
-                }
-
-                if !summary.windows.isEmpty {
-                    quotaWindowPickers(summary.windows)
-                }
+                quotaChannelEditor(.primary)
+                quotaChannelEditor(.secondary)
 
                 Picker(t("外观", "Appearance"), selection: binding(\.preset)) {
                     ForEach(MenuBarConfiguration.Preset.allCases) { preset in
@@ -354,60 +334,119 @@ struct MenuBarConfigurationEditor: View {
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
-    private var accountPicker: some View {
+    @ViewBuilder
+    private func quotaChannelEditor(_ slot: ChannelSlot) -> some View {
+        let channel = channel(for: slot)
+        let accounts = channel.selectedAccounts(from: model.accountQuota)
+        let windows = accounts.aggregateQuotaWindows()
+
         VStack(alignment: .leading, spacing: 7) {
-            Text(t("账号", "Accounts"))
-                .font(.subheadline.weight(.medium))
-            if model.accountQuota.isEmpty {
-                Text(t("刷新后可选择账号。", "Refresh to choose accounts."))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } else {
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 5) {
-                        ForEach(model.accountQuota.filter { $0.provider == configuration.provider }) { account in
-                            Toggle(isOn: accountBinding(account.id)) {
-                                HStack(spacing: 6) {
-                                    ProviderLogo(provider: account.provider, size: 14)
-                                    Text(account.displayName)
-                                        .lineLimit(1)
-                                    Spacer(minLength: 4)
-                                    Text(account.provider.displayName)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .font(.caption)
-                            }
-                        }
+            Text(slot == .primary ? t("第一配额", "Quota 1") : t("第二配额", "Quota 2"))
+                .font(.subheadline.weight(.semibold))
+
+            Picker(t("范围", "Scope"), selection: channelBinding(slot, \.scope)) {
+                Text(t("全部账号", "All accounts")).tag(MenuBarConfiguration.Scope.allAccounts)
+                Text(t("一类账号", "Provider")).tag(MenuBarConfiguration.Scope.provider)
+                Text(t("指定账号", "Accounts")).tag(MenuBarConfiguration.Scope.accounts)
+            }
+
+            if channel.scope != .allAccounts {
+                Picker(t("服务", "Provider"), selection: channelProviderBinding(slot)) {
+                    ForEach(ProviderType.allCases) { provider in
+                        Text(provider.displayName).tag(provider)
                     }
                 }
-                .frame(maxHeight: 120)
-                .padding(8)
-                .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 8))
+            }
+
+            if channel.scope == .accounts {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(t("账号", "Accounts"))
+                        .font(.caption.weight(.medium))
+                    if model.accountQuota.filter({ $0.provider == channel.provider }).isEmpty {
+                        Text(t("刷新后可选择账号。", "Refresh to choose accounts."))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ScrollView {
+                            LazyVStack(alignment: .leading, spacing: 5) {
+                                ForEach(model.accountQuota.filter { $0.provider == channel.provider }) { account in
+                                    Toggle(isOn: accountBinding(account.id, slot: slot)) {
+                                        HStack(spacing: 6) {
+                                            ProviderLogo(provider: account.provider, size: 14)
+                                            Text(account.displayName)
+                                                .lineLimit(1)
+                                            Spacer(minLength: 4)
+                                            Text(account.provider.displayName)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        .font(.caption)
+                                    }
+                                }
+                            }
+                        }
+                        .frame(maxHeight: 105)
+                        .padding(8)
+                        .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 8))
+                    }
+                }
+            }
+
+            Picker(t("配额窗口", "Quota window"), selection: channelWindowBinding(slot, windows: windows)) {
+                Text(slot == .primary
+                    ? t("自动（周额度优先）", "Automatic (weekly first)")
+                    : t("自动（Spark 优先）", "Automatic (Spark first)"))
+                    .tag(String?.none)
+                ForEach(windows) { window in
+                    Text(windowOptionTitle(window, channel: channel)).tag(Optional(window.id))
+                }
+            }
+            .disabled(windows.isEmpty)
+
+            if windows.isEmpty {
+                Text(t("当前范围没有可用配额；刷新数据或重新选择范围。", "No quota is available for this scope; refresh or choose another scope."))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
         }
+        .padding(10)
+        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 10))
     }
 
     private var customComposer: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(t("自定义元素", "Custom elements"))
                 .font(.subheadline.weight(.medium))
-            Toggle(t("图标", "Icon"), isOn: customBinding(\.showsIcon))
-            Toggle(t("主配额百分比", "Primary percentage"), isOn: customBinding(\.showsPrimaryPercentage))
-            Toggle(t("主配额进度条", "Primary linear bar"), isOn: customBinding(\.showsPrimaryLinearBar))
-            Toggle(t("主配额圆环", "Primary ring"), isOn: customBinding(\.showsPrimaryRing))
-            Toggle(t("次级配额", "Secondary quota"), isOn: customBinding(\.showsSecondaryQuota))
+            Toggle(t("第一配额图标", "Quota 1 icon"), isOn: customPrimaryIconBinding)
+            Toggle(t("第一配额百分比", "Quota 1 percentage"), isOn: customBinding(\.showsPrimaryPercentage))
+            Toggle(t("第一配额进度条", "Quota 1 linear bar"), isOn: customBinding(\.showsPrimaryLinearBar))
+            Toggle(t("第一配额圆环", "Quota 1 ring"), isOn: customBinding(\.showsPrimaryRing))
+            Toggle(t("显示第二配额", "Show quota 2"), isOn: customBinding(\.showsSecondaryQuota))
+            Toggle(t("第二配额图标", "Quota 2 icon"), isOn: customSecondaryIconBinding)
+                .disabled(!configuration.customDisplay.showsSecondaryQuota)
             Toggle(
-                t("次级配额百分比", "Secondary percentage"),
+                t("第二配额百分比", "Quota 2 percentage"),
                 isOn: customSecondaryPercentageBinding
             )
             .disabled(!configuration.customDisplay.showsSecondaryQuota)
             Toggle(
-                t("次级配额进度条", "Secondary linear bar"),
+                t("第二配额进度条", "Quota 2 linear bar"),
                 isOn: customSecondaryLinearBarBinding
             )
             .disabled(!configuration.customDisplay.showsSecondaryQuota)
             Toggle(t("两行布局", "Two-line layout"), isOn: customBinding(\.usesTwoLines))
                 .disabled(!configuration.customDisplay.showsSecondaryQuota)
+            if configuration.customDisplay.showsPrimaryLinearBar {
+                meterPlacementPicker(
+                    t("第一配额信息位置", "Quota 1 info position"),
+                    selection: customPrimaryMeterPlacementBinding
+                )
+            }
+            if configuration.customDisplay.displaysSecondaryLinearBar {
+                meterPlacementPicker(
+                    t("第二配额信息位置", "Quota 2 info position"),
+                    selection: customSecondaryMeterPlacementBinding
+                )
+            }
             Picker(t("元素顺序", "Element order"), selection: customBinding(\.elementOrder)) {
                 Text(t("图标在前", "Icon first")).tag(MenuBarConfiguration.ElementOrder.iconFirst)
                 Text(t("数值在前", "Value first")).tag(MenuBarConfiguration.ElementOrder.valueFirst)
@@ -468,32 +507,6 @@ struct MenuBarConfigurationEditor: View {
         }
         .padding(10)
         .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 10))
-    }
-
-    private func quotaWindowPickers(_ windows: [AggregatedQuotaWindow]) -> some View {
-        VStack(spacing: 8) {
-            Picker(
-                t("主配额", "Primary quota"),
-                selection: windowBinding(\.primaryWindowID, availableWindows: windows)
-            ) {
-                Text(t("自动（周额度优先）", "Automatic (weekly first)"))
-                    .tag(String?.none)
-                ForEach(windows) { window in
-                    Text(model.language.quotaLabel(window.label)).tag(Optional(window.id))
-                }
-            }
-
-            Picker(
-                t("第二配额", "Secondary quota"),
-                selection: windowBinding(\.secondaryWindowID, availableWindows: windows)
-            ) {
-                Text(t("自动（Spark 优先）", "Automatic (Spark first)"))
-                    .tag(String?.none)
-                ForEach(windows) { window in
-                    Text(model.language.quotaLabel(window.label)).tag(Optional(window.id))
-                }
-            }
-        }
     }
 
     private var configuration: MenuBarConfiguration { model.menuBarConfiguration }
@@ -558,40 +571,137 @@ struct MenuBarConfigurationEditor: View {
         )
     }
 
-    private func windowBinding(
-        _ keyPath: WritableKeyPath<MenuBarConfiguration, String?>,
-        availableWindows: [AggregatedQuotaWindow]
-    ) -> Binding<String?> {
-        let availableIDs = Set(availableWindows.map(\.id))
-        return Binding(
-            get: {
-                guard let configured = configuration[keyPath: keyPath],
-                      availableIDs.contains(configured) else {
-                    return nil
-                }
-                return configured
-            },
+    private var customPrimaryIconBinding: Binding<Bool> {
+        Binding(
+            get: { configuration.customDisplay.displaysPrimaryIcon },
             set: { value in
                 var updated = configuration
-                updated[keyPath: keyPath] = value
+                updated.customDisplay.showsPrimaryIcon = value
+                updated.customDisplay.showsIcon = false
+                updated.customDisplay = updated.customDisplay.normalized()
                 model.updateMenuBarConfiguration(updated)
             }
         )
     }
 
-    private func accountBinding(_ id: String) -> Binding<Bool> {
+    private var customSecondaryIconBinding: Binding<Bool> {
         Binding(
-            get: { configuration.accountIDs.contains(id) },
-            set: { selected in
+            get: { configuration.customDisplay.displaysSecondaryIcon },
+            set: { value in
                 var updated = configuration
-                if selected {
-                    updated.accountIDs = Array(Set(updated.accountIDs).union([id])).sorted()
-                } else {
-                    updated.accountIDs.removeAll { $0 == id }
-                }
+                updated.customDisplay.showsSecondaryIcon = value
+                updated.customDisplay = updated.customDisplay.normalized()
                 model.updateMenuBarConfiguration(updated)
             }
         )
+    }
+
+    private var customPrimaryMeterPlacementBinding: Binding<MenuBarConfiguration.MeterInfoPlacement> {
+        Binding(
+            get: { configuration.customDisplay.effectivePrimaryMeterInfoPlacement },
+            set: { value in
+                var updated = configuration
+                updated.customDisplay.primaryMeterInfoPlacement = value
+                model.updateMenuBarConfiguration(updated)
+            }
+        )
+    }
+
+    private var customSecondaryMeterPlacementBinding: Binding<MenuBarConfiguration.MeterInfoPlacement> {
+        Binding(
+            get: { configuration.customDisplay.effectiveSecondaryMeterInfoPlacement },
+            set: { value in
+                var updated = configuration
+                updated.customDisplay.secondaryMeterInfoPlacement = value
+                model.updateMenuBarConfiguration(updated)
+            }
+        )
+    }
+
+    private func meterPlacementPicker(
+        _ title: String,
+        selection: Binding<MenuBarConfiguration.MeterInfoPlacement>
+    ) -> some View {
+        Picker(title, selection: selection) {
+            Text(t("同行", "Inline")).tag(MenuBarConfiguration.MeterInfoPlacement.inline)
+            Text(t("进度条上方", "Above bar")).tag(MenuBarConfiguration.MeterInfoPlacement.above)
+            Text(t("进度条下方", "Below bar")).tag(MenuBarConfiguration.MeterInfoPlacement.below)
+        }
+        .pickerStyle(.segmented)
+    }
+
+    private func channel(for slot: ChannelSlot) -> MenuBarConfiguration.Channel {
+        slot == .primary ? configuration.primaryChannel : configuration.secondaryChannel
+    }
+
+    private func updateChannel(
+        _ slot: ChannelSlot,
+        _ change: (inout MenuBarConfiguration.Channel) -> Void
+    ) {
+        var updated = configuration
+        if slot == .primary {
+            change(&updated.primaryChannel)
+        } else {
+            change(&updated.secondaryChannel)
+        }
+        model.updateMenuBarConfiguration(updated)
+    }
+
+    private func channelBinding<Value>(
+        _ slot: ChannelSlot,
+        _ keyPath: WritableKeyPath<MenuBarConfiguration.Channel, Value>
+    ) -> Binding<Value> {
+        return Binding(
+            get: { channel(for: slot)[keyPath: keyPath] },
+            set: { value in updateChannel(slot) { $0[keyPath: keyPath] = value } }
+        )
+    }
+
+    private func channelProviderBinding(_ slot: ChannelSlot) -> Binding<ProviderType> {
+        Binding(
+            get: { channel(for: slot).provider },
+            set: { provider in
+                updateChannel(slot) {
+                    $0.provider = provider
+                    $0.accountIDs = []
+                    $0.windowID = nil
+                }
+            }
+        )
+    }
+
+    private func channelWindowBinding(
+        _ slot: ChannelSlot,
+        windows: [AggregatedQuotaWindow]
+    ) -> Binding<String?> {
+        Binding(
+            get: { windows.resolvingSelection(channel(for: slot).windowID)?.id },
+            set: { value in updateChannel(slot) { $0.windowID = value } }
+        )
+    }
+
+    private func accountBinding(_ id: String, slot: ChannelSlot) -> Binding<Bool> {
+        Binding(
+            get: { channel(for: slot).accountIDs.contains(id) },
+            set: { selected in
+                updateChannel(slot) { channel in
+                    if selected {
+                        channel.accountIDs = Array(Set(channel.accountIDs).union([id])).sorted()
+                    } else {
+                        channel.accountIDs.removeAll { $0 == id }
+                    }
+                    channel.windowID = nil
+                }
+            }
+        )
+    }
+
+    private func windowOptionTitle(
+        _ window: AggregatedQuotaWindow,
+        channel: MenuBarConfiguration.Channel
+    ) -> String {
+        let quota = model.language.quotaLabel(window.label)
+        return channel.scope == .allAccounts ? "\(window.provider.displayName) · \(quota)" : quota
     }
 
     private func panelSectionBinding(_ section: MenuBarConfiguration.PanelSection) -> Binding<Bool> {
@@ -688,42 +798,60 @@ struct MenuBarConfigurationEditor: View {
     }
 }
 
-private struct MenuBarQuotaSummary {
-    let configuration: MenuBarConfiguration
+private struct MenuBarQuotaChannelSummary {
+    let configuration: MenuBarConfiguration.Channel
     let accounts: [AccountQuotaInfo]
     let windows: [AggregatedQuotaWindow]
+    let window: AggregatedQuotaWindow?
+
+    init(
+        configuration: MenuBarConfiguration.Channel,
+        allAccounts: [AccountQuotaInfo],
+        automaticCategory: String
+    ) {
+        self.configuration = configuration
+        accounts = configuration.selectedAccounts(from: allAccounts)
+        windows = accounts.aggregateQuotaWindows()
+        window = windows.resolvingSelection(configuration.windowID)
+            ?? windows.first(where: { $0.category == automaticCategory })
+            ?? windows.first
+    }
+
+    var iconProvider: ProviderType? {
+        if configuration.scope == .allAccounts {
+            // Stable window identities are Provider-specific even when the
+            // channel searches all accounts. Show the Provider that actually
+            // contributed this selected value instead of two indistinguishable
+            // CPA marks in independent-channel layouts.
+            return window?.provider
+        }
+        return configuration.provider
+    }
+}
+
+private struct MenuBarQuotaSummary {
+    let configuration: MenuBarConfiguration
+    let primarySource: MenuBarQuotaChannelSummary
+    let secondarySource: MenuBarQuotaChannelSummary
 
     init(configuration: MenuBarConfiguration, accounts: [AccountQuotaInfo]) {
         self.configuration = configuration
-        self.accounts = configuration.selectedAccounts(from: accounts)
-        windows = self.accounts.aggregateQuotaWindows()
+        primarySource = MenuBarQuotaChannelSummary(
+            configuration: configuration.primaryChannel,
+            allAccounts: accounts,
+            automaticCategory: "weekly"
+        )
+        secondarySource = MenuBarQuotaChannelSummary(
+            configuration: configuration.secondaryChannel,
+            allAccounts: accounts,
+            automaticCategory: "spark"
+        )
     }
 
-    var primary: AggregatedQuotaWindow? {
-        if let selectedID = configuration.primaryWindowID,
-           let selected = windows.first(where: { $0.id == selectedID }) {
-            return selected
-        }
-        return windows.first(where: { $0.isWeekly }) ?? windows.first
-    }
-
-    var spark: AggregatedQuotaWindow? {
-        windows.first(where: { $0.isSpark })
-    }
-
-    var secondary: AggregatedQuotaWindow? {
-        if let selectedID = configuration.secondaryWindowID,
-           let selected = windows.first(where: { $0.id == selectedID && $0.id != primary?.id }) {
-            return selected
-        }
-        return spark.flatMap { $0.id == primary?.id ? nil : $0 }
-            ?? windows.first { $0.id != primary?.id }
-    }
-
-    var color: Color {
-        guard configuration.scope != .allAccounts else { return .accentColor }
-        return menuBarProviderColor(configuration.provider)
-    }
+    var accounts: [AccountQuotaInfo] { primarySource.accounts }
+    var windows: [AggregatedQuotaWindow] { primarySource.windows }
+    var primary: AggregatedQuotaWindow? { primarySource.window }
+    var secondary: AggregatedQuotaWindow? { secondarySource.window }
 
     func title(language: AppLanguage) -> String {
         switch configuration.scope {
@@ -734,9 +862,14 @@ private struct MenuBarQuotaSummary {
     }
 
     func subtitle(language: AppLanguage) -> String {
-        language.text(
-            "\(accounts.count) 个账号 · 同类窗口取平均",
-            "\(accounts.count) accounts · matching windows averaged"
+        let secondIsDifferent = configuration.primaryChannel != configuration.secondaryChannel
+        return language.text(
+            secondIsDifferent
+                ? "两个独立数据源 · 同类窗口取平均"
+                : "\(accounts.count) 个账号 · 同类窗口取平均",
+            secondIsDifferent
+                ? "Two independent sources · matching windows averaged"
+                : "\(accounts.count) accounts · matching windows averaged"
         )
     }
 }
@@ -937,6 +1070,7 @@ private struct StatusBarTwoLineGlyph: View {
 private enum MenuBarStatusImageRenderer {
     private static let height: CGFloat = 18
     private static let iconSize: CGFloat = 16
+    private static let compactIconSize: CGFloat = 7
     private static let spacing: CGFloat = 3
     private static let imageCache: NSCache<NSString, NSImage> = {
         let cache = NSCache<NSString, NSImage>()
@@ -950,16 +1084,28 @@ private enum MenuBarStatusImageRenderer {
         case compact
     }
 
+    private enum ChannelRole: String {
+        case primary
+        case secondary
+    }
+
     private enum Element {
-        case icon
+        case icon(ChannelRole, size: CGFloat)
         case ring(percentage: Int, size: CGFloat)
         case linear(percentage: Int, width: CGFloat, height: CGFloat)
         case text(String, FontRole)
+        case stackedMeter(
+            role: ChannelRole,
+            percentage: Int,
+            showsIcon: Bool,
+            showsPercentage: Bool,
+            placement: MenuBarConfiguration.MeterInfoPlacement
+        )
     }
 
     private enum Content {
         case single([Element])
-        case twoLine(top: [Element], bottom: [Element], showsIcon: Bool, iconFirst: Bool)
+        case twoLine(top: [Element], bottom: [Element])
     }
 
     private struct Layout {
@@ -1038,9 +1184,10 @@ private enum MenuBarStatusImageRenderer {
     ) -> NSString {
         let display = configuration.display
         return [
-            configuration.scope.rawValue,
-            configuration.provider.rawValue,
-            display.showsIcon.description,
+            channelCacheKey(configuration.primaryChannel),
+            channelCacheKey(configuration.secondaryChannel),
+            display.displaysPrimaryIcon.description,
+            display.displaysSecondaryIcon.description,
             display.showsPrimaryPercentage.description,
             display.showsPrimaryLinearBar.description,
             display.showsPrimaryRing.description,
@@ -1049,6 +1196,8 @@ private enum MenuBarStatusImageRenderer {
             display.displaysSecondaryLinearBar.description,
             display.usesTwoLines.description,
             display.elementOrder.rawValue,
+            display.effectivePrimaryMeterInfoPlacement.rawValue,
+            display.effectiveSecondaryMeterInfoPlacement.rawValue,
             summary.primary?.id ?? "none",
             summary.primary.map { String($0.remainingPercentage) } ?? "none",
             summary.primary?.label ?? "none",
@@ -1058,6 +1207,15 @@ private enum MenuBarStatusImageRenderer {
             usesApplicationIconForGlobalScope.description,
             String(format: "%.2f", scale)
         ].joined(separator: "|") as NSString
+    }
+
+    private static func channelCacheKey(_ channel: MenuBarConfiguration.Channel) -> String {
+        [
+            channel.scope.rawValue,
+            channel.provider.rawValue,
+            channel.accountIDs.sorted().joined(separator: ","),
+            channel.windowID ?? "automatic"
+        ].joined(separator: ":")
     }
 
     private static func layout(
@@ -1070,53 +1228,36 @@ private enum MenuBarStatusImageRenderer {
             display.usesTwoLines = false
         }
 
-        if display.usesTwoLines, let secondary = summary.secondary {
-            var top: [Element] = []
-            let primaryPercentage = summary.primary?.remainingPercentage ?? 0
-            if display.showsPrimaryRing {
-                top.append(.ring(percentage: primaryPercentage, size: 7))
-            }
-            if display.showsPrimaryLinearBar {
-                top.append(.linear(percentage: primaryPercentage, width: 19, height: 2.5))
-            }
-            if display.showsPrimaryPercentage {
-                let primaryText = summary.primary.map {
-                    "\(shortLabel($0)) \($0.remainingPercentage)%"
-                } ?? "—"
-                top.append(.text(primaryText, .compact))
-            }
-            var bottom: [Element] = []
-            if display.displaysSecondaryLinearBar {
-                bottom.append(.linear(
-                    percentage: secondary.remainingPercentage,
-                    width: 19,
-                    height: 2.5
-                ))
-            }
-            if display.displaysSecondaryPercentage {
-                bottom.append(.text(
-                    "\(shortLabel(secondary)) \(secondary.remainingPercentage)%",
-                    .compact
-                ))
-            }
+        if display.usesTwoLines, summary.secondary != nil {
+            let top = compactChannelElements(
+                role: .primary,
+                window: summary.primary,
+                showsIcon: display.displaysPrimaryIcon,
+                showsRing: display.showsPrimaryRing,
+                showsBar: display.showsPrimaryLinearBar,
+                showsPercentage: display.showsPrimaryPercentage,
+                order: display.elementOrder
+            )
+            let bottom = compactChannelElements(
+                role: .secondary,
+                window: summary.secondary,
+                showsIcon: display.displaysSecondaryIcon,
+                showsRing: false,
+                showsBar: display.displaysSecondaryLinearBar,
+                showsPercentage: display.displaysSecondaryPercentage,
+                order: display.elementOrder
+            )
             let contentWidth = max(rowWidth(top), rowWidth(bottom), 1)
-            let totalWidth = display.showsIcon
-                ? iconSize + spacing + contentWidth
-                : contentWidth
             return Layout(
-                size: NSSize(width: ceil(totalWidth), height: height),
-                content: .twoLine(
-                    top: top,
-                    bottom: bottom,
-                    showsIcon: display.showsIcon,
-                    iconFirst: display.elementOrder == .iconFirst
-                )
+                size: NSSize(width: ceil(contentWidth), height: height),
+                content: .twoLine(top: top, bottom: bottom)
             )
         }
 
-        var values: [Element] = []
-        let primaryPercentage = summary.primary?.remainingPercentage ?? 0
+        var elements: [Element] = []
         let canCombineDualText = display.displaysSecondaryPercentage
+            && !display.displaysPrimaryIcon
+            && !display.displaysSecondaryIcon
             && !display.displaysSecondaryLinearBar
             && display.showsPrimaryPercentage
             && !display.showsPrimaryLinearBar
@@ -1127,56 +1268,101 @@ private enum MenuBarStatusImageRenderer {
         if canCombineDualText,
            let primary = summary.primary,
            let secondary = summary.secondary {
-            values.append(.text(
+            elements.append(.text(
                 "\(shortLabel(primary)) \(primary.remainingPercentage)% · "
                     + "\(shortLabel(secondary)) \(secondary.remainingPercentage)%",
                 .secondary
             ))
         } else {
-            if display.showsPrimaryRing {
-                values.append(.ring(percentage: primaryPercentage, size: 11))
-            }
-            if display.showsPrimaryLinearBar {
-                values.append(.linear(percentage: primaryPercentage, width: 25, height: 4))
-            }
-            if display.showsPrimaryPercentage {
-                values.append(.text(
-                    summary.primary.map { "\($0.remainingPercentage)%" } ?? "—",
-                    .primary
-                ))
-            }
-            if let secondary = summary.secondary {
-                if display.displaysSecondaryLinearBar {
-                    values.append(.linear(
-                        percentage: secondary.remainingPercentage,
-                        width: 25,
-                        height: 4
-                    ))
-                }
-                if display.displaysSecondaryPercentage {
-                    values.append(.text(
-                        "\(shortLabel(secondary)) \(secondary.remainingPercentage)%",
-                        .secondary
-                    ))
-                }
+            elements += channelElements(
+                role: .primary,
+                window: summary.primary,
+                showsIcon: display.displaysPrimaryIcon,
+                showsRing: display.showsPrimaryRing,
+                showsBar: display.showsPrimaryLinearBar,
+                showsPercentage: display.showsPrimaryPercentage,
+                placement: display.effectivePrimaryMeterInfoPlacement,
+                order: display.elementOrder
+            )
+            if display.showsSecondaryQuota, summary.secondary != nil {
+                elements += channelElements(
+                    role: .secondary,
+                    window: summary.secondary,
+                    showsIcon: display.displaysSecondaryIcon,
+                    showsRing: false,
+                    showsBar: display.displaysSecondaryLinearBar,
+                    showsPercentage: display.displaysSecondaryPercentage,
+                    placement: display.effectiveSecondaryMeterInfoPlacement,
+                    order: display.elementOrder
+                )
             }
         }
 
-        var elements = values
-        if display.showsIcon {
-            if display.elementOrder == .iconFirst {
-                elements.insert(.icon, at: 0)
-            } else {
-                elements.append(.icon)
-            }
-        }
         if elements.isEmpty {
-            elements = [.icon]
+            elements = [.icon(.primary, size: iconSize)]
         }
         return Layout(
             size: NSSize(width: ceil(rowWidth(elements)), height: height),
             content: .single(elements)
         )
+    }
+
+    private static func channelElements(
+        role: ChannelRole,
+        window: AggregatedQuotaWindow?,
+        showsIcon: Bool,
+        showsRing: Bool,
+        showsBar: Bool,
+        showsPercentage: Bool,
+        placement: MenuBarConfiguration.MeterInfoPlacement,
+        order: MenuBarConfiguration.ElementOrder
+    ) -> [Element] {
+        let percentage = window?.remainingPercentage ?? 0
+        if showsBar, placement != .inline {
+            return [.stackedMeter(
+                role: role,
+                percentage: percentage,
+                showsIcon: showsIcon,
+                showsPercentage: showsPercentage,
+                placement: placement
+            )]
+        }
+
+        var values: [Element] = []
+        if showsRing { values.append(.ring(percentage: percentage, size: 11)) }
+        if showsBar { values.append(.linear(percentage: percentage, width: 25, height: 4)) }
+        if showsPercentage {
+            values.append(.text(window.map { "\($0.remainingPercentage)%" } ?? "—", .primary))
+        }
+        if showsIcon {
+            let icon = Element.icon(role, size: iconSize)
+            if order == .iconFirst { values.insert(icon, at: 0) } else { values.append(icon) }
+        }
+        return values
+    }
+
+    private static func compactChannelElements(
+        role: ChannelRole,
+        window: AggregatedQuotaWindow?,
+        showsIcon: Bool,
+        showsRing: Bool,
+        showsBar: Bool,
+        showsPercentage: Bool,
+        order: MenuBarConfiguration.ElementOrder
+    ) -> [Element] {
+        let percentage = window?.remainingPercentage ?? 0
+        var values: [Element] = []
+        if showsRing { values.append(.ring(percentage: percentage, size: compactIconSize)) }
+        if showsBar { values.append(.linear(percentage: percentage, width: 19, height: 2.5)) }
+        if showsPercentage {
+            let text = window.map { "\(shortLabel($0)) \($0.remainingPercentage)%" } ?? "—"
+            values.append(.text(text, .compact))
+        }
+        if showsIcon {
+            let icon = Element.icon(role, size: compactIconSize)
+            if order == .iconFirst { values.insert(icon, at: 0) } else { values.append(icon) }
+        }
+        return values
     }
 
     private static func draw(
@@ -1196,32 +1382,10 @@ private enum MenuBarStatusImageRenderer {
                 summary: summary,
                 usesApplicationIconForGlobalScope: usesApplicationIconForGlobalScope
             )
-        case .twoLine(let top, let bottom, let showsIcon, let iconFirst):
-            let contentWidth = max(rowWidth(top), rowWidth(bottom), 1)
-            let contentX: CGFloat
-            let iconX: CGFloat
-            if showsIcon && iconFirst {
-                iconX = 0
-                contentX = iconSize + spacing
-            } else if showsIcon {
-                contentX = 0
-                iconX = contentWidth + spacing
-            } else {
-                contentX = 0
-                iconX = 0
-            }
-            if showsIcon {
-                drawIcon(
-                    x: iconX,
-                    y: (height - iconSize) / 2,
-                    configuration: configuration,
-                    summary: summary,
-                    usesApplicationIconForGlobalScope: usesApplicationIconForGlobalScope
-                )
-            }
+        case .twoLine(let top, let bottom):
             drawRow(
                 top,
-                x: contentX,
+                x: 0,
                 y: 9,
                 rowHeight: 9,
                 configuration: configuration,
@@ -1230,7 +1394,7 @@ private enum MenuBarStatusImageRenderer {
             )
             drawRow(
                 bottom,
-                x: contentX,
+                x: 0,
                 y: 0,
                 rowHeight: 9,
                 configuration: configuration,
@@ -1253,11 +1417,12 @@ private enum MenuBarStatusImageRenderer {
         for (index, element) in elements.enumerated() {
             if index > 0 { cursor += spacing }
             switch element {
-            case .icon:
+            case .icon(let role, let size):
                 drawIcon(
                     x: cursor,
-                    y: y + (rowHeight - iconSize) / 2,
-                    configuration: configuration,
+                    y: y + (rowHeight - size) / 2,
+                    size: size,
+                    role: role,
                     summary: summary,
                     usesApplicationIconForGlobalScope: usesApplicationIconForGlobalScope
                 )
@@ -1278,6 +1443,23 @@ private enum MenuBarStatusImageRenderer {
                 )
             case .text(let text, let role):
                 drawText(text, role: role, x: cursor, y: y, rowHeight: rowHeight)
+            case .stackedMeter(
+                let role,
+                let percentage,
+                let showsIcon,
+                let showsPercentage,
+                let placement
+            ):
+                drawStackedMeter(
+                    role: role,
+                    percentage: percentage,
+                    showsIcon: showsIcon,
+                    showsPercentage: showsPercentage,
+                    placement: placement,
+                    x: cursor,
+                    summary: summary,
+                    usesApplicationIconForGlobalScope: usesApplicationIconForGlobalScope
+                )
             }
             cursor += elementWidth(element)
         }
@@ -1286,11 +1468,13 @@ private enum MenuBarStatusImageRenderer {
     private static func drawIcon(
         x: CGFloat,
         y: CGFloat,
-        configuration: MenuBarConfiguration,
+        size: CGFloat,
+        role: ChannelRole,
         summary: MenuBarQuotaSummary,
         usesApplicationIconForGlobalScope: Bool
     ) {
-        let isGlobal = configuration.scope == .allAccounts && usesApplicationIconForGlobalScope
+        let channel = role == .primary ? summary.primarySource : summary.secondarySource
+        let isGlobal = channel.iconProvider == nil && usesApplicationIconForGlobalScope
         let source: NSImage?
         let opticalScale: CGFloat
         if isGlobal {
@@ -1300,15 +1484,16 @@ private enum MenuBarStatusImageRenderer {
             )
             opticalScale = 1
         } else {
-            source = NSImage(named: NSImage.Name(configuration.provider.logoAssetName))
-            opticalScale = providerOpticalScale(configuration.provider)
+            let provider = channel.iconProvider ?? channel.configuration.provider
+            source = NSImage(named: NSImage.Name(provider.logoAssetName))
+            opticalScale = providerOpticalScale(provider)
         }
         guard let source else { return }
 
-        let targetSize = iconSize * opticalScale
+        let targetSize = size * opticalScale
         let target = NSRect(
-            x: x + (iconSize - targetSize) / 2,
-            y: y + (iconSize - targetSize) / 2,
+            x: x + (size - targetSize) / 2,
+            y: y + (size - targetSize) / 2,
             width: targetSize,
             height: targetSize
         )
@@ -1332,6 +1517,50 @@ private enum MenuBarStatusImageRenderer {
             fraction: 1,
             respectFlipped: true,
             hints: [.interpolation: NSImageInterpolation.high]
+        )
+    }
+
+    private static func drawStackedMeter(
+        role: ChannelRole,
+        percentage: Int,
+        showsIcon: Bool,
+        showsPercentage: Bool,
+        placement: MenuBarConfiguration.MeterInfoPlacement,
+        x: CGFloat,
+        summary: MenuBarQuotaSummary,
+        usesApplicationIconForGlobalScope: Bool
+    ) {
+        let element = Element.stackedMeter(
+            role: role,
+            percentage: percentage,
+            showsIcon: showsIcon,
+            showsPercentage: showsPercentage,
+            placement: placement
+        )
+        let width = elementWidth(element)
+        let metadataElements: [Element] = {
+            var result: [Element] = []
+            if showsIcon { result.append(.icon(role, size: compactIconSize)) }
+            if showsPercentage { result.append(.text("\(percentage)%", .compact)) }
+            return result
+        }()
+        let metadataWidth = rowWidth(metadataElements)
+        let metadataY: CGFloat = placement == .below ? 0 : 9
+        let barY: CGFloat = placement == .below ? 11 : 2.5
+        if !metadataElements.isEmpty {
+            drawRow(
+                metadataElements,
+                x: x + (width - metadataWidth) / 2,
+                y: metadataY,
+                rowHeight: 9,
+                configuration: summary.configuration,
+                summary: summary,
+                usesApplicationIconForGlobalScope: usesApplicationIconForGlobalScope
+            )
+        }
+        drawLinear(
+            percentage: percentage,
+            rect: NSRect(x: x + (width - 25) / 2, y: barY, width: 25, height: 3.5)
         )
     }
 
@@ -1404,11 +1633,16 @@ private enum MenuBarStatusImageRenderer {
 
     private static func elementWidth(_ element: Element) -> CGFloat {
         switch element {
-        case .icon: iconSize
-        case .ring(_, let size): size
-        case .linear(_, let width, _): width
+        case .icon(_, let size): return size
+        case .ring(_, let size): return size
+        case .linear(_, let width, _): return width
         case .text(let text, let role):
-            ceil((text as NSString).size(withAttributes: textAttributes(role)).width) + 1
+            return ceil((text as NSString).size(withAttributes: textAttributes(role)).width) + 1
+        case .stackedMeter(_, let percentage, let showsIcon, let showsPercentage, _):
+            var metadata: [Element] = []
+            if showsIcon { metadata.append(.icon(.primary, size: compactIconSize)) }
+            if showsPercentage { metadata.append(.text("\(percentage)%", .compact)) }
+            return max(25, rowWidth(metadata))
         }
     }
 

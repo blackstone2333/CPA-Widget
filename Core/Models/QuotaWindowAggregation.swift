@@ -5,18 +5,22 @@ import Foundation
 /// provider aggregate is the most constrained window for each account.
 struct AggregatedQuotaWindow: Identifiable, Sendable {
     let id: String
+    let category: String
+    let provider: ProviderType
     let label: String
     let remainingPercentage: Int
     let resetTime: Date?
     let durationSeconds: TimeInterval?
     let accountCount: Int
 
-    var isSpark: Bool { id == "spark" }
-    var isWeekly: Bool { id == "weekly" }
+    var isSpark: Bool { category == "spark" }
+    var isWeekly: Bool { category == "weekly" }
 }
 
 private struct AccountQuotaWindowSample {
     let id: String
+    let category: String
+    let provider: ProviderType
     let label: String
     let remainingPercentage: Int
     let resetTime: Date?
@@ -29,7 +33,9 @@ extension Collection where Element == AccountQuotaInfo {
         // an upstream response repeats a window, that account is not weighted
         // more heavily than the other selected accounts.
         let samples = flatMap { account in
-            Dictionary(grouping: account.windows, by: QuotaWindowAggregation.key)
+            Dictionary(grouping: account.windows) {
+                QuotaWindowAggregation.identity(for: $0, provider: account.provider)
+            }
                 .compactMap { key, windows -> AccountQuotaWindowSample? in
                     guard let representative = windows.sorted(
                         by: QuotaWindowAggregation.representativeOrder
@@ -38,6 +44,8 @@ extension Collection where Element == AccountQuotaInfo {
                         / Double(windows.count)
                     return AccountQuotaWindowSample(
                         id: key,
+                        category: QuotaWindowAggregation.category(for: representative),
+                        provider: account.provider,
                         label: representative.label,
                         remainingPercentage: Int(percentage.rounded()),
                         resetTime: QuotaWindowAggregation.earliestUpcomingReset(in: windows),
@@ -58,6 +66,8 @@ extension Collection where Element == AccountQuotaInfo {
             let upcomingReset = resetTimes.filter { $0 > Date() }.min() ?? resetTimes.min()
             return AggregatedQuotaWindow(
                 id: key,
+                category: representative?.category ?? "other",
+                provider: representative?.provider ?? .codex,
                 label: representative?.label ?? key,
                 remainingPercentage: Int(percentage.rounded()),
                 resetTime: upcomingReset,
@@ -70,7 +80,22 @@ extension Collection where Element == AccountQuotaInfo {
 }
 
 enum QuotaWindowAggregation {
-    static func key(for window: QuotaWindowInfo) -> String {
+    /// A stable selection identity preserves every window actually returned by
+    /// CLIProxyAPI. Period categories such as `weekly` remain sorting/default
+    /// hints only; using them as identity previously merged Antigravity's
+    /// Gemini and Claude/GPT windows into one row.
+    static func identity(for window: QuotaWindowInfo, provider: ProviderType) -> String {
+        let rawID = window.id.trimmingCharacters(in: .whitespacesAndNewlines)
+        let component: String
+        if provider == .gemini, looksLikeGeneratedUUID(rawID) {
+            component = "label-\(normalizedComponent(window.label))"
+        } else {
+            component = normalizedComponent(rawID.isEmpty ? window.label : rawID)
+        }
+        return "\(provider.rawValue):\(component)"
+    }
+
+    static func category(for window: QuotaWindowInfo) -> String {
         let text = "\(window.id) \(window.label)".lowercased()
         if text.contains("spark") { return "spark" }
         if text.contains("week") || text.contains("weekly") || text.contains("周") {
@@ -92,9 +117,13 @@ enum QuotaWindowAggregation {
     }
 
     static func displayOrder(_ lhs: AggregatedQuotaWindow, _ rhs: AggregatedQuotaWindow) -> Bool {
-        let lhsRank = rank(lhs.id)
-        let rhsRank = rank(rhs.id)
-        return lhsRank == rhsRank ? lhs.label < rhs.label : lhsRank < rhsRank
+        let lhsRank = rank(lhs.category)
+        let rhsRank = rank(rhs.category)
+        if lhsRank != rhsRank { return lhsRank < rhsRank }
+        if lhs.provider.sortOrder != rhs.provider.sortOrder {
+            return lhs.provider.sortOrder < rhs.provider.sortOrder
+        }
+        return lhs.label.localizedCaseInsensitiveCompare(rhs.label) == .orderedAscending
     }
 
     static func representativeOrder(_ lhs: QuotaWindowInfo, _ rhs: QuotaWindowInfo) -> Bool {
@@ -108,6 +137,31 @@ enum QuotaWindowAggregation {
         case "short": 2
         case "monthly": 3
         default: 4
+        }
+    }
+
+    private static func normalizedComponent(_ value: String) -> String {
+        value.lowercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\\s+", with: "-", options: .regularExpression)
+    }
+
+    private static func looksLikeGeneratedUUID(_ value: String) -> Bool {
+        let candidate = value.split(separator: "-").suffix(5).joined(separator: "-")
+        return UUID(uuidString: candidate) != nil
+    }
+}
+
+extension Collection where Element == AggregatedQuotaWindow {
+    /// Resolves new stable IDs first, then v0.5.5 semantic aliases such as
+    /// `weekly`, `spark`, and `other-<label>`.
+    func resolvingSelection(_ selectionID: String?) -> AggregatedQuotaWindow? {
+        guard let selectionID else { return nil }
+        if let exact = first(where: { $0.id == selectionID }) { return exact }
+        if let category = first(where: { $0.category == selectionID }) { return category }
+        return first {
+            "other-\($0.label.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))"
+                == selectionID
         }
     }
 }

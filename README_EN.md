@@ -20,7 +20,7 @@
 
 CPA Widget reads subscription quotas through the CLIProxyAPI Management API, shows each account's remaining percentage and reset windows, and brings the most useful information to the macOS menu bar and desktop. Codex is enabled by default; every other provider is optional.
 
-> Current version: v0.5.5. Requires macOS 14 Sonoma or later.
+> Current version: v0.5.6. Requires macOS 14 Sonoma or later.
 
 ## Screenshots
 
@@ -39,7 +39,8 @@ These are real Widget screenshots and contain no account identifiers.
 - Weekly, short-window, Codex Spark, and other quota windows returned by the backend.
 - A quota timeline that compares quota used with time elapsed to reveal consumption pace.
 - 5, 15, or 30-minute automatic refresh, plus manual refresh.
-- A configurable menu-bar quota display with provider/account scope, primary and secondary windows, ten presets, and a custom composer.
+- Two fully independent menu-bar quota channels, each with its own provider/account scope and any real quota window returned by the backend.
+- Ten menu-bar presets plus a custom composer with independent icons, percentages, bars, and inline/above/below meter information.
 - Dark Mode, SF Symbols, Dynamic Type, and native WidgetKit styling.
 - Endpoint storage in App Group settings and Management Key storage in macOS Keychain.
 - Provider OAuth tokens stay inside CLIProxyAPI and are never read or stored by this app.
@@ -66,8 +67,9 @@ Widget refresh timing is ultimately controlled by macOS and may be delayed by sl
 Turn on **Show** in the app's **Menu Bar Quota** section to keep quota information in the macOS menu bar:
 
 - The default is the average weekly quota across all Codex accounts, with Spark available as the secondary quota.
-- Choose all accounts, one provider, or specific accounts, then select the primary and secondary quota windows.
-- Ten presets include icon only, icon with percentage, linear progress, dual quota, dual progress bars, two-line, and ring styles. A custom composer and live width preview are also available.
+- Quota 1 and Quota 2 each choose their own all-account, provider, or account scope and any quota window actually present in cached data.
+- Antigravity Gemini Models and Claude/GPT Models are separate selectable windows instead of being merged solely because they share a period.
+- Ten presets include icon only, icon with percentage, linear progress, dual quota, dual progress bars, two-line, and ring styles. The custom composer independently controls icons, percentages, bars, and inline/above/below information placement.
 - Click the menu-bar item for the full account list, reset times, freshness, and error state. Refreshing from the panel does not open the main window.
 - Closing the main window keeps the app running and refreshing at the configured interval.
 
@@ -79,7 +81,7 @@ Turn on **Show** in the app's **Menu Bar Quota** section to keep quota informati
 2. Unzip it and move `CPA Widget.app` to `/Applications`.
 3. Open the app and enter your CLIProxyAPI endpoint and Management Key.
 
-Release builds currently use local signing and are not Apple-notarized. If macOS cannot verify the developer, run the following commands only after verifying that the app came from this repository:
+Public release builds are not Apple-notarized. If macOS cannot verify the developer, run the following commands only after verifying that the app came from this repository:
 
 ```bash
 sudo xattr -rd com.apple.quarantine "/Applications/CPA Widget.app"

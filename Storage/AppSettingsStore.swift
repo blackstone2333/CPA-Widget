@@ -123,7 +123,7 @@ struct AppSettingsStore: Sendable {
         configuration.isEnabled = !settingsFileAlreadyExists
         update { stored in
             stored.menuBarConfiguration = configuration
-            stored.menuBarMigrationVersion = 1
+            stored.menuBarMigrationVersion = 2
         }
         return configuration
     }
@@ -131,7 +131,7 @@ struct AppSettingsStore: Sendable {
     nonmutating func saveMenuBarConfiguration(_ configuration: MenuBarConfiguration) {
         update { settings in
             settings.menuBarConfiguration = configuration
-            settings.menuBarMigrationVersion = 1
+            settings.menuBarMigrationVersion = 2
         }
     }
 
