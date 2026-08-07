@@ -11,8 +11,8 @@ settings:
     MACOSX_DEPLOYMENT_TARGET: "14.0"
     DEVELOPMENT_TEAM: ""
     CODE_SIGN_STYLE: Automatic
-    CURRENT_PROJECT_VERSION: 9
-    MARKETING_VERSION: 0.5.4
+    CURRENT_PROJECT_VERSION: 11
+    MARKETING_VERSION: 0.5.5
     ENABLE_HARDENED_RUNTIME: YES
     ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
   configs:
@@ -42,15 +42,13 @@ targets:
       properties:
         CFBundleDisplayName: CPA Widget
         CFBundleName: CPA Widget
+        CFBundleIconFile: AppIcon
+        CFBundleIconName: AppIcon
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: "Copyright © 2026 CPA Widget"
-        CFBundleURLTypes:
-          - CFBundleURLName: com.cpawidget.app
-            CFBundleURLSchemes:
-              - cpawidget
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true
     entitlements:
@@ -79,8 +77,10 @@ targets:
     info:
       path: Widget/Info.plist
       properties:
-        CFBundleDisplayName: CPA Widget
-        CFBundleName: CPA Widget
+        CFBundleDisplayName: CPA Widget Extension
+        CFBundleName: CPA Widget Extension
+        CFBundleIconFile: AppIcon
+        CFBundleIconName: AppIcon
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: "14.0"
@@ -97,6 +97,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.cpawidget.app.widget
         PRODUCT_NAME: CPA Widget Extension
         PRODUCT_MODULE_NAME: CPAWidgetExtension
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_CFBundleIconName: AppIcon
         SKIP_INSTALL: YES
         APPLICATION_EXTENSION_API_ONLY: YES
 

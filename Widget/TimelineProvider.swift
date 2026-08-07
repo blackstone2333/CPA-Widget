@@ -23,7 +23,7 @@ struct CPAWidgetTimelineProvider: TimelineProvider {
         let enabledProviders = settingsStore.enabledProviders
         let accounts = cacheStore.loadAccountQuota()
             .filter { enabledProviders.contains($0.provider) }
-            .sorted(by: accountOrder)
+            .sorted(by: AccountQuotaInfo.displayOrder)
         let provider: ProviderType? = accounts.contains(where: { $0.provider == .codex })
             ? .codex
             : accounts.first?.provider
@@ -65,7 +65,7 @@ struct CPAAccountWidgetTimelineProvider: AppIntentTimelineProvider {
 
     private func makeEntry(_ configuration: AccountQuotaWidgetIntent) -> CPAWidgetEntry {
         let allAccounts = liveAccounts()
-        let requestedIDs = configuration.accounts?.map(\.id) ?? []
+        let requestedIDs = configuration.accounts ?? []
         let selectedAccounts = requestedIDs.isEmpty
             ? allAccounts
             : allAccounts.filter { requestedIDs.contains($0.id) }
@@ -92,7 +92,7 @@ struct CPAAccountWidgetTimelineProvider: AppIntentTimelineProvider {
         let enabledProviders = settingsStore.enabledProviders
         return cacheStore.loadAccountQuota()
             .filter { enabledProviders.contains($0.provider) }
-            .sorted(by: accountOrder)
+            .sorted(by: AccountQuotaInfo.displayOrder)
     }
 }
 
@@ -130,17 +130,12 @@ struct CPATimelineWidgetTimelineProvider: AppIntentTimelineProvider {
 
     private func makeEntry(_ configuration: QuotaTimelineWidgetIntent) -> CPAWidgetEntry {
         let enabledProviders = settingsStore.enabledProviders
-        var accounts = cacheStore.loadAccountQuota()
+        let accounts = cacheStore.loadAccountQuota()
             .filter { enabledProviders.contains($0.provider) }
-        if let provider = configuration.provider.provider {
-            accounts = accounts.filter { $0.provider == provider }
-        }
-
-        let requestedIDs = configuration.accounts?.map(\.id) ?? []
-        if !requestedIDs.isEmpty {
-            accounts = accounts.filter { requestedIDs.contains($0.id) }
-        }
-        accounts.sort(by: accountOrder)
+            .selectedForWidget(
+                provider: configuration.provider.provider,
+                accountIDs: configuration.accounts ?? []
+            )
 
         return CPAWidgetEntry(
             date: Date(),
@@ -149,19 +144,9 @@ struct CPATimelineWidgetTimelineProvider: AppIntentTimelineProvider {
             language: settingsStore.language,
             mode: .accountOverview,
             selectedProvider: configuration.provider.provider,
-            selectedAccountIDs: requestedIDs,
+            selectedAccountIDs: configuration.accounts ?? [],
             windowChoice: configuration.window,
             warnsAboutInsecureHTTP: settingsStore.warnsAboutInsecureHTTP
         )
     }
-}
-
-private func accountOrder(_ lhs: AccountQuotaInfo, _ rhs: AccountQuotaInfo) -> Bool {
-    if lhs.mostConstrainedPercentage != rhs.mostConstrainedPercentage {
-        return lhs.mostConstrainedPercentage < rhs.mostConstrainedPercentage
-    }
-    if lhs.provider.sortOrder != rhs.provider.sortOrder {
-        return lhs.provider.sortOrder < rhs.provider.sortOrder
-    }
-    return lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName) == .orderedAscending
 }

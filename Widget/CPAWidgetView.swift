@@ -1,3 +1,4 @@
+import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -73,7 +74,7 @@ struct CPAAccountQuotaWidgetView: View {
 
     @ViewBuilder
     private var accountOverviewLayout: some View {
-        let ordered = entry.accounts.sorted(by: accountOrder)
+        let ordered = entry.accounts.sorted(by: AccountQuotaInfo.displayOrder)
         switch family {
         case .systemSmall:
             AccountRingGridView(accounts: ordered.prefixArray(4), entry: entry)
@@ -254,7 +255,7 @@ private struct LargeSingleProviderView: View {
                 }
             }
             DetailGridView(
-                items: summary.accounts.sorted(by: accountOrder).prefixArray(4).map(QuotaDetailItem.init),
+                items: summary.accounts.sorted(by: AccountQuotaInfo.displayOrder).prefixArray(4).map(QuotaDetailItem.init),
                 entry: entry,
                 title: ""
             )
@@ -701,7 +702,7 @@ private struct WidgetHeader: View {
                         "当前连接使用 HTTP，建议改用 HTTPS。"
                     ))
             }
-            Link(destination: URL(string: "cpawidget://refresh")!) {
+            Button(intent: RefreshQuotaIntent()) {
                 Image(systemName: "arrow.clockwise")
                     .font(.caption2.weight(.semibold))
                     .frame(width: 18, height: 18)
@@ -894,13 +895,6 @@ private func isWeekScaleWindow(_ window: QuotaWindowInfo) -> Bool {
 private func isShortWindow(_ window: QuotaWindowInfo) -> Bool {
     let text = "\(window.id) \(window.label)".lowercased()
     return text.contains("5-hour") || text.contains("5h") || (window.durationSeconds ?? .infinity) <= 6 * 60 * 60
-}
-
-private func accountOrder(_ lhs: AccountQuotaInfo, _ rhs: AccountQuotaInfo) -> Bool {
-    if lhs.mostConstrainedPercentage != rhs.mostConstrainedPercentage {
-        return lhs.mostConstrainedPercentage < rhs.mostConstrainedPercentage
-    }
-    return lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName) == .orderedAscending
 }
 
 private extension Collection {

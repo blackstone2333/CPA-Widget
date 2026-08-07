@@ -48,50 +48,24 @@ enum WidgetWindowChoice: String, AppEnum, Sendable {
     ]
 }
 
-struct WidgetAccountEntity: AppEntity, Sendable {
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "账号 / Account")
-    static let defaultQuery = WidgetAccountQuery()
+struct WidgetAccountOptionsProvider: DynamicOptionsProvider {
+    typealias Result = IntentItemCollection<String>
+    typealias DefaultValue = String
 
-    let id: String
-    let title: String
-    let providerName: String
-
-    var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(title: "\(title)", subtitle: "\(providerName)")
-    }
-}
-
-struct WidgetAccountQuery: EntityQuery {
-    init() {}
-
-    func entities(for identifiers: [String]) async throws -> [WidgetAccountEntity] {
-        let wanted = Set(identifiers)
-        return Self.allEntities().filter { wanted.contains($0.id) }
-    }
-
-    func suggestedEntities() async throws -> [WidgetAccountEntity] {
-        Self.allEntities()
-    }
-
-    private static func allEntities() -> [WidgetAccountEntity] {
-        CacheStore().loadAccountQuota()
-            .sorted {
-                let providerOrder = $0.provider.displayName.localizedCaseInsensitiveCompare(
-                    $1.provider.displayName
-                )
-                if providerOrder != .orderedSame {
-                    return providerOrder == .orderedAscending
-                }
-                return $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
-            }
+    func results() async throws -> IntentItemCollection<String> {
+        let items = CacheStore().loadAccountQuota()
+            .sorted(by: AccountQuotaInfo.displayOrder)
             .enumerated()
             .map { index, account in
-                WidgetAccountEntity(
-                    id: account.id,
-                    title: maskedAccountTitle(account.displayName, fallbackIndex: index + 1),
-                    providerName: account.provider.displayName
+                IntentItem(
+                    account.id,
+                    title: "\(Self.maskedAccountTitle(account.displayName, fallbackIndex: index + 1))",
+                    subtitle: "\(account.provider.displayName)"
                 )
             }
+        return IntentItemCollection(
+            sections: [IntentItemSection(items: items)]
+        )
     }
 
     private static func maskedAccountTitle(_ value: String, fallbackIndex: Int) -> String {
@@ -116,8 +90,11 @@ struct AccountQuotaWidgetIntent: WidgetConfigurationIntent {
     @Parameter(title: "服务类型 / Provider", default: .codex)
     var provider: WidgetProviderChoice
 
-    @Parameter(title: "账号（最多 4 个）/ Accounts (up to 4)")
-    var accounts: [WidgetAccountEntity]?
+    @Parameter(
+        title: "账号（最多 4 个）/ Accounts (up to 4)",
+        optionsProvider: WidgetAccountOptionsProvider()
+    )
+    var accounts: [String]?
 
     init() {
         mode = .singleProvider
@@ -133,8 +110,11 @@ struct QuotaTimelineWidgetIntent: WidgetConfigurationIntent {
     @Parameter(title: "服务类型 / Provider", default: .automatic)
     var provider: WidgetProviderChoice
 
-    @Parameter(title: "账号（大型最多显示 3 个）/ Accounts (up to 3 on Large)")
-    var accounts: [WidgetAccountEntity]?
+    @Parameter(
+        title: "账号（大型最多显示 3 个）/ Accounts (up to 3 on Large)",
+        optionsProvider: WidgetAccountOptionsProvider()
+    )
+    var accounts: [String]?
 
     @Parameter(title: "配额周期 / Quota window", default: .automatic)
     var window: WidgetWindowChoice
