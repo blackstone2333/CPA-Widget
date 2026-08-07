@@ -1,7 +1,18 @@
 import Combine
 import Foundation
+import OSLog
 import ServiceManagement
 import WidgetKit
+import notify
+
+@MainActor
+final class MenuBarPresentationState: ObservableObject {
+    @Published var isInserted: Bool
+
+    init(isInserted: Bool) {
+        self.isInserted = isInserted
+    }
+}
 
 @MainActor
 final class AppModel: ObservableObject {
@@ -11,14 +22,17 @@ final class AppModel: ObservableObject {
     @Published var refreshInterval: TimeInterval
     @Published var useMockData: Bool
     @Published var language: AppLanguage
+    @Published private(set) var menuBarConfiguration: MenuBarConfiguration
     @Published private(set) var quota: [QuotaInfo]
     @Published private(set) var accountQuota: [AccountQuotaInfo]
     @Published private(set) var cacheStatus: CacheStatus
     @Published private(set) var statusMessage: String?
     @Published private(set) var isRefreshing = false
     @Published private(set) var isTestingConnection = false
+    @Published private(set) var menuBarSettingsRequest = 0
 
     let refreshOptions: [TimeInterval] = [5 * 60, 15 * 60, 30 * 60]
+    let menuBarPresentation: MenuBarPresentationState
 
     var usesRemotePlainHTTP: Bool {
         guard let components = URLComponents(
@@ -35,12 +49,29 @@ final class AppModel: ObservableObject {
     private let cacheStore = CacheStore()
     private let connectionService = ConnectionService()
     private let refreshService = RefreshService()
+    private let logger = Logger(subsystem: "com.cpawidget.app", category: "Refresh")
     private var hasLaunched = false
+    private var widgetRefreshNotificationToken: Int32 = -1
+    private var persistedManagementSecret = ""
 
     init() {
         let storedProviders = settingsStore.enabledProviders
-        endpoint = (try? keychain.read(.endpoint)) ?? "http://localhost:8317"
-        managementSecret = (try? keychain.read(.managementSecret)) ?? ""
+        let storedMenuBarConfiguration = settingsStore.menuBarConfiguration
+        menuBarConfiguration = storedMenuBarConfiguration
+        menuBarPresentation = MenuBarPresentationState(
+            isInserted: storedMenuBarConfiguration.isEnabled
+        )
+        let storedEndpoint = settingsStore.endpoint
+        let endpointValue = storedEndpoint
+            ?? (try? keychain.read(.endpoint))
+            ?? "http://localhost:8317"
+        let secretValue = (try? keychain.read(.managementSecret)) ?? ""
+        endpoint = endpointValue
+        managementSecret = secretValue
+        persistedManagementSecret = secretValue
+        if storedEndpoint == nil {
+            settingsStore.endpoint = endpointValue
+        }
         enabledProviders = storedProviders
         refreshInterval = settingsStore.refreshInterval
         useMockData = settingsStore.useMockData
@@ -54,9 +85,16 @@ final class AppModel: ObservableObject {
         cacheStatus = cacheStore.loadStatus()
     }
 
+    deinit {
+        if widgetRefreshNotificationToken >= 0 {
+            notify_cancel(widgetRefreshNotificationToken)
+        }
+    }
+
     func launch() async {
         guard !hasLaunched else { return }
         hasLaunched = true
+        registerForWidgetRefreshRequests()
         registerForAutomaticLaunchIfNeeded()
         await refreshQuota()
         startAutomaticRefresh()
@@ -83,10 +121,25 @@ final class AppModel: ObservableObject {
         reloadWidgetTimelines()
     }
 
+    func updateMenuBarConfiguration(_ configuration: MenuBarConfiguration) {
+        menuBarConfiguration = configuration
+        if menuBarPresentation.isInserted != configuration.isEnabled {
+            menuBarPresentation.isInserted = configuration.isEnabled
+        }
+        settingsStore.saveMenuBarConfiguration(configuration)
+    }
+
+    func requestMenuBarSettings() {
+        menuBarSettingsRequest &+= 1
+    }
+
     func saveSettings(restartAutomaticRefresh: Bool = true) {
         do {
-            try keychain.save(endpoint.trimmingCharacters(in: .whitespacesAndNewlines), for: .endpoint)
-            try keychain.save(managementSecret, for: .managementSecret)
+            settingsStore.endpoint = endpoint.trimmingCharacters(in: .whitespacesAndNewlines)
+            if managementSecret != persistedManagementSecret {
+                try keychain.save(managementSecret, for: .managementSecret)
+                persistedManagementSecret = managementSecret
+            }
             settingsStore.enabledProviders = enabledProviders
             settingsStore.refreshInterval = refreshInterval
             settingsStore.useMockData = useMockData
@@ -183,6 +236,23 @@ final class AppModel: ObservableObject {
         let service = SMAppService.mainApp
         guard service.status == .notRegistered else { return }
         try? service.register()
+    }
+
+    private func registerForWidgetRefreshRequests() {
+        let status = notify_register_dispatch(
+            WidgetRefreshRequest.notificationName,
+            &widgetRefreshNotificationToken,
+            .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.logger.info("Widget refresh request received")
+                await self?.refreshQuota()
+            }
+        }
+        logger.info("Widget refresh notification registration status: \(status)")
+        if status != NOTIFY_STATUS_OK {
+            widgetRefreshNotificationToken = -1
+        }
     }
 
     private func reloadWidgetTimelines() {

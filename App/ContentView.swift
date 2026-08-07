@@ -7,20 +7,32 @@ struct ContentView: View {
     @State private var showsConnectionSettings = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                header
-                providerBar
-                accountSection
-                timelineSection
-                connectionSection
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    header
+                    providerBar
+                    accountSection
+                    timelineSection
+                    MenuBarConfigurationEditor()
+                        .id("menu-bar-settings")
+                    connectionSection
+                }
+                .padding(28)
             }
-            .padding(28)
+            .onChange(of: model.menuBarSettingsRequest) { _, _ in
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    proxy.scrollTo("menu-bar-settings", anchor: .center)
+                }
+            }
+            .onAppear {
+                guard model.menuBarSettingsRequest > 0 else { return }
+                DispatchQueue.main.async {
+                    proxy.scrollTo("menu-bar-settings", anchor: .center)
+                }
+            }
         }
         .background(Color(nsColor: .windowBackgroundColor))
-        .task {
-            await model.launch()
-        }
     }
 
     private var header: some View {
@@ -189,8 +201,41 @@ struct ContentView: View {
     }
 
     private var connectionSection: some View {
-        DisclosureGroup(isExpanded: $showsConnectionSettings) {
-            VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    showsConnectionSettings.toggle()
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    Label(
+                        t("连接与显示设置", "Connection & Display Settings"),
+                        systemImage: "gearshape"
+                    )
+                    .font(.headline)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(showsConnectionSettings ? 90 : 0))
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(
+                t("连接与显示设置", "Connection & Display Settings")
+            )
+            .accessibilityValue(
+                showsConnectionSettings
+                    ? t("已展开", "Expanded")
+                    : t("已收起", "Collapsed")
+            )
+
+            if showsConnectionSettings {
+                VStack(alignment: .leading, spacing: 16) {
                 Divider()
 
                 LabeledContent(t("CLIProxyAPI 地址", "CLIProxyAPI Endpoint")) {
@@ -247,11 +292,9 @@ struct ContentView: View {
                         .foregroundStyle(.secondary)
                         .textSelection(.enabled)
                 }
+                }
+                .padding(.top, 8)
             }
-            .padding(.top, 8)
-        } label: {
-            Label(t("连接与显示设置", "Connection & Display Settings"), systemImage: "gearshape")
-                .font(.headline)
         }
         .padding(16)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))

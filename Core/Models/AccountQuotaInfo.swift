@@ -32,6 +32,19 @@ struct AccountQuotaInfo: Codable, Identifiable, Sendable {
 }
 
 extension Array where Element == AccountQuotaInfo {
+    func selectedForWidget(
+        provider: ProviderType?,
+        accountIDs: [String]
+    ) -> [AccountQuotaInfo] {
+        let requestedIDs = Set(accountIDs)
+        return filter { account in
+            let matchesProvider = provider == nil || account.provider == provider
+            let matchesAccount = requestedIDs.isEmpty || requestedIDs.contains(account.id)
+            return matchesProvider && matchesAccount
+        }
+        .sorted(by: AccountQuotaInfo.displayOrder)
+    }
+
     func aggregateQuota(for provider: ProviderType) -> QuotaInfo? {
         let matching = filter { $0.provider == provider && !$0.windows.isEmpty }
         guard !matching.isEmpty else { return nil }
@@ -48,5 +61,14 @@ extension Array where Element == AccountQuotaInfo {
             remainingPercentage: Int(average.rounded()),
             resetTime: nextReset
         )
+    }
+}
+
+extension AccountQuotaInfo {
+    static func displayOrder(_ lhs: AccountQuotaInfo, _ rhs: AccountQuotaInfo) -> Bool {
+        if lhs.provider.sortOrder != rhs.provider.sortOrder {
+            return lhs.provider.sortOrder < rhs.provider.sortOrder
+        }
+        return lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName) == .orderedAscending
     }
 }

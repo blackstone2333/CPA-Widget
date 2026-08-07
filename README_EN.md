@@ -18,9 +18,9 @@
   <img alt="License MIT" src="https://img.shields.io/badge/License-MIT-blue.svg">
 </p>
 
-CPA Widget reads subscription quotas through the CLIProxyAPI Management API, shows each account's remaining percentage and reset windows, and brings the most useful information to the macOS desktop. Codex is enabled by default; every other provider is optional.
+CPA Widget reads subscription quotas through the CLIProxyAPI Management API, shows each account's remaining percentage and reset windows, and brings the most useful information to the macOS menu bar and desktop. Codex is enabled by default; every other provider is optional.
 
-> Current version: v0.5.4. Requires macOS 14 Sonoma or later.
+> Current version: v0.5.5. Requires macOS 14 Sonoma or later.
 
 ## Screenshots
 
@@ -39,8 +39,9 @@ These are real Widget screenshots and contain no account identifiers.
 - Weekly, short-window, Codex Spark, and other quota windows returned by the backend.
 - A quota timeline that compares quota used with time elapsed to reveal consumption pace.
 - 5, 15, or 30-minute automatic refresh, plus manual refresh.
+- A configurable menu-bar quota display with provider/account scope, primary and secondary windows, ten presets, and a custom composer.
 - Dark Mode, SF Symbols, Dynamic Type, and native WidgetKit styling.
-- Endpoint and Management Key storage in macOS Keychain.
+- Endpoint storage in App Group settings and Management Key storage in macOS Keychain.
 - Provider OAuth tokens stay inside CLIProxyAPI and are never read or stored by this app.
 
 ## Widget layouts
@@ -59,6 +60,16 @@ These are real Widget screenshots and contain no account identifiers.
 - Edit the Widget to choose providers, accounts, and short or weekly windows.
 
 Widget refresh timing is ultimately controlled by macOS and may be delayed by sleep, power conditions, or system scheduling.
+
+## Menu-bar quota
+
+Turn on **Show** in the app's **Menu Bar Quota** section to keep quota information in the macOS menu bar:
+
+- The default is the average weekly quota across all Codex accounts, with Spark available as the secondary quota.
+- Choose all accounts, one provider, or specific accounts, then select the primary and secondary quota windows.
+- Ten presets include icon only, icon with percentage, linear progress, dual quota, dual progress bars, two-line, and ring styles. A custom composer and live width preview are also available.
+- Click the menu-bar item for the full account list, reset times, freshness, and error state. Refreshing from the panel does not open the main window.
+- Closing the main window keeps the app running and refreshing at the configured interval.
 
 ## Installation
 
@@ -156,7 +167,7 @@ Alternatively, open `CPAWidget.xcodeproj` in Xcode and run the `CPAWidget` schem
 
 ## Privacy and security
 
-- The Endpoint and Management Key are stored in macOS Keychain.
+- The Endpoint is stored in App Group settings. The Management Key stays in macOS Keychain and is written only when it changes.
 - Quota snapshots, account display labels, and non-sensitive preferences stay locally in `~/Library/Application Support/CPAWidget/Shared/`.
 - OAuth tokens, CLIProxyAPI credential files, and account secrets are never committed to this repository or exported by the app.
 - The project contains no telemetry, advertising, cloud sync, or third-party analytics SDK.

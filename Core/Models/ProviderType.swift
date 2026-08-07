@@ -28,9 +28,9 @@ enum ProviderType: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var sortOrder: Int {
         switch self {
-        case .claude: 0
-        case .codex: 1
-        case .gemini: 2
+        case .gemini: 0
+        case .claude: 1
+        case .codex: 2
         case .kimi: 3
         }
     }

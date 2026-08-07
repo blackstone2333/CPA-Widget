@@ -18,9 +18,9 @@
   <img alt="License MIT" src="https://img.shields.io/badge/License-MIT-blue.svg">
 </p>
 
-CPA Widget 通过 CLIProxyAPI Management API 读取各账号的订阅配额，按账号显示剩余比例、重置时间和配额时间线，并把常用信息放到 macOS 桌面 Widget。默认只启用 Codex，其他服务可以按需勾选。
+CPA Widget 通过 CLIProxyAPI Management API 读取各账号的订阅配额，按账号显示剩余比例、重置时间和配额时间线，并把常用信息放到 macOS 菜单栏与桌面 Widget。默认只启用 Codex，其他服务可以按需勾选。
 
-> 当前版本：v0.5.4。仅支持 macOS 14 Sonoma 或更高版本。
+> 当前版本：v0.5.5。仅支持 macOS 14 Sonoma 或更高版本。
 
 ## 实际效果
 
@@ -39,8 +39,9 @@ CPA Widget 通过 CLIProxyAPI Management API 读取各账号的订阅配额，�
 - 显示周配额、短周期配额、Codex Spark 等真实返回的配额窗口。
 - 配额时间线同时展示已用比例与已过时间，直观看出消耗速度是否超前。
 - 5、15、30 分钟自动刷新，可手动刷新。
+- 可配置的菜单栏额度：服务或账号范围、主/次额度窗口、10 种预设与自定义组合。
 - 深色模式、SF Symbols、Dynamic Type 和 macOS 原生 WidgetKit 样式。
-- Endpoint 与 Management Key 存入 macOS Keychain。
+- Endpoint 保存在 App Group 设置中，Management Key 存入 macOS Keychain。
 - Provider OAuth Token 始终留在 CLIProxyAPI，不由本应用读取或保存。
 
 ## Widget 类型
@@ -59,6 +60,16 @@ CPA Widget 通过 CLIProxyAPI Management API 读取各账号的订阅配额，�
 - 可在“编辑小组件”中选择服务、账号以及短周期 / 周周期。
 
 WidgetKit 的刷新时间最终由 macOS 调度，系统可能根据电量、休眠和使用频率延后刷新。
+
+## 菜单栏额度
+
+在主应用的“菜单栏配额”区域打开“显示”，即可把额度常驻在 macOS 菜单栏：
+
+- 默认显示 Codex 所有账号的周额度平均值，同时可选择 Spark 作为第二额度。
+- 可改为全部账号、指定服务或指定账号，并选择主配额与第二配额窗口。
+- 内置仅图标、图标＋百分比、线性进度、双额度、双进度条、双行、环形进度等 10 种预设，也支持自定义组合与实时宽度预览。
+- 单击菜单栏项目可查看完整账号列表、重置时间、更新时间和错误状态；面板内可直接刷新，不会自动打开主窗口。
+- 关闭主窗口后应用仍在后台运行，继续按设置的间隔自动刷新。
 
 ## 安装
 
@@ -156,7 +167,7 @@ build/DerivedData/Build/Products/Release/CPA Widget.app
 
 ## 隐私与安全
 
-- Endpoint 与 Management Key 保存在 macOS Keychain。
+- Endpoint 保存在 App Group 设置中；Management Key 保存在 macOS Keychain，应用仅在密钥变化时写入。
 - 配额快照、账号显示名和非敏感设置只保存在本机 `~/Library/Application Support/CPAWidget/Shared/`。
 - OAuth Token、CLIProxyAPI 认证文件和账号密钥不会写入本仓库，也不会被应用导出。
 - 项目不包含遥测、广告、云同步或第三方统计 SDK。

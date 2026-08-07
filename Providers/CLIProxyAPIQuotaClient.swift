@@ -15,11 +15,24 @@ actor CLIProxyAPIQuotaClient: QuotaFetchingClient {
     init(
         endpoint: URL,
         managementSecret: String,
-        session: URLSession = .shared
+        session: URLSession? = nil
     ) {
         self.endpoint = endpoint
         self.managementSecret = managementSecret.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.session = session
+        self.session = session ?? Self.makeEphemeralSession()
+    }
+
+    /// Keep CLIProxyAPI traffic out of the shared on-disk HTTP storage.
+    ///
+    /// The host bundle identifier ends in `.app`. A persistent shared session
+    /// therefore creates `~/Library/HTTPStorages/com.cpawidget.app`, which
+    /// LaunchServices can mistake for a second, iconless application bundle.
+    private static func makeEphemeralSession() -> URLSession {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.urlCache = nil
+        configuration.httpCookieStorage = nil
+        return URLSession(configuration: configuration)
     }
 
     func testConnection() async throws -> Int {
