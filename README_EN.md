@@ -20,7 +20,7 @@
 
 CPA Widget reads subscription quotas through the CLIProxyAPI Management API, shows each account's remaining percentage and reset windows, and brings the most useful information to the macOS desktop. Codex is enabled by default; every other provider is optional.
 
-> Current version: v0.5.3. Requires macOS 14 Sonoma or later.
+> Current version: v0.5.4. Requires macOS 14 Sonoma or later.
 
 ## Screenshots
 
@@ -141,9 +141,10 @@ xcodebuild \
   -derivedDataPath build/DerivedData \
   ARCHS='arm64 x86_64' \
   ONLY_ACTIVE_ARCH=NO \
-  CODE_SIGN_IDENTITY='-' \
   build
 ```
+
+If the command line reports that no signing identity is available, select your own Team under Signing & Capabilities in Xcode and build again.
 
 The app will be located at:
 

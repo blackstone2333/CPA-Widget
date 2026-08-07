@@ -20,7 +20,7 @@
 
 CPA Widget 通过 CLIProxyAPI Management API 读取各账号的订阅配额，按账号显示剩余比例、重置时间和配额时间线，并把常用信息放到 macOS 桌面 Widget。默认只启用 Codex，其他服务可以按需勾选。
 
-> 当前版本：v0.5.3。仅支持 macOS 14 Sonoma 或更高版本。
+> 当前版本：v0.5.4。仅支持 macOS 14 Sonoma 或更高版本。
 
 ## 实际效果
 
@@ -141,9 +141,10 @@ xcodebuild \
   -derivedDataPath build/DerivedData \
   ARCHS='arm64 x86_64' \
   ONLY_ACTIVE_ARCH=NO \
-  CODE_SIGN_IDENTITY='-' \
   build
 ```
+
+如果命令行提示缺少签名身份，请在 Xcode 的 Signing & Capabilities 中选择自己的 Team 后再构建。
 
 构建结果位于：
 
