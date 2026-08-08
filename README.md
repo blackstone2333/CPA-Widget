@@ -20,7 +20,7 @@
 
 CPA Widget 通过 CLIProxyAPI Management API 读取各账号的订阅配额，按账号显示剩余比例、重置时间和配额时间线，并把常用信息放到 macOS 菜单栏与桌面 Widget。默认只启用 Codex，其他服务可以按需勾选。
 
-> 当前版本：v0.5.9。仅支持 macOS 14 Sonoma 或更高版本。
+> 当前版本：v0.5.10。仅支持 macOS 14 Sonoma 或更高版本。
 
 ## 实际效果
 
