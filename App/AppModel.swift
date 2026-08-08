@@ -6,15 +6,6 @@ import WidgetKit
 import notify
 
 @MainActor
-final class MenuBarPresentationState: ObservableObject {
-    @Published var isInserted: Bool
-
-    init(isInserted: Bool) {
-        self.isInserted = isInserted
-    }
-}
-
-@MainActor
 final class AppModel: ObservableObject {
     @Published var endpoint: String
     @Published var managementSecret: String
@@ -32,8 +23,6 @@ final class AppModel: ObservableObject {
     @Published private(set) var menuBarSettingsRequest = 0
 
     let refreshOptions: [TimeInterval] = [5 * 60, 15 * 60, 30 * 60]
-    let menuBarPresentation: MenuBarPresentationState
-
     var usesRemotePlainHTTP: Bool {
         guard let components = URLComponents(
             string: endpoint.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -58,9 +47,6 @@ final class AppModel: ObservableObject {
         let storedProviders = settingsStore.enabledProviders
         let storedMenuBarConfiguration = settingsStore.menuBarConfiguration
         menuBarConfiguration = storedMenuBarConfiguration
-        menuBarPresentation = MenuBarPresentationState(
-            isInserted: storedMenuBarConfiguration.isEnabled
-        )
         let storedEndpoint = settingsStore.endpoint
         let endpointValue = storedEndpoint
             ?? (try? keychain.read(.endpoint))
@@ -123,9 +109,6 @@ final class AppModel: ObservableObject {
 
     func updateMenuBarConfiguration(_ configuration: MenuBarConfiguration) {
         menuBarConfiguration = configuration
-        if menuBarPresentation.isInserted != configuration.isEnabled {
-            menuBarPresentation.isInserted = configuration.isEnabled
-        }
         settingsStore.saveMenuBarConfiguration(configuration)
     }
 

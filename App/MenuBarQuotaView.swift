@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 
 struct MenuBarQuotaStatusItem: View {
@@ -26,6 +27,169 @@ struct MenuBarQuotaStatusItem: View {
             )
         }
         return model.language.text("CPA 配额：暂无数据。点击查看详情。", "CPA quota: no data. Click for details.")
+    }
+}
+
+/// Owns the status item and popover explicitly so every click has one clear
+/// open/close transition. This avoids the competing insertion and dismissal
+/// callbacks produced by `MenuBarExtra(isInserted:)`.
+@MainActor
+final class MenuBarStatusController: NSObject, NSPopoverDelegate {
+    private let model: AppModel
+    private let popover = NSPopover()
+    private var statusItem: NSStatusItem?
+    private var localEventMonitor: Any?
+    private var globalEventMonitor: Any?
+    private var cancellables = Set<AnyCancellable>()
+
+    init(model: AppModel) {
+        self.model = model
+        super.init()
+
+        let hostingController = NSHostingController(
+            rootView: MenuBarQuotaPanel().environmentObject(model)
+        )
+        hostingController.sizingOptions = [.preferredContentSize]
+        popover.contentViewController = hostingController
+        popover.behavior = .applicationDefined
+        popover.animates = true
+        popover.delegate = self
+
+        model.$menuBarConfiguration
+            .combineLatest(model.$accountQuota, model.$language)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] configuration, accounts, language in
+                self?.updateStatusItem(
+                    configuration: configuration,
+                    accounts: accounts,
+                    language: language
+                )
+            }
+            .store(in: &cancellables)
+    }
+
+    @objc private func togglePopover(_ sender: NSStatusBarButton) {
+        if popover.isShown {
+            closePopover()
+        } else {
+            showPopover(relativeTo: sender)
+        }
+    }
+
+    private func updateStatusItem(
+        configuration: MenuBarConfiguration,
+        accounts: [AccountQuotaInfo],
+        language: AppLanguage
+    ) {
+        guard configuration.isEnabled else {
+            removeStatusItem()
+            return
+        }
+
+        let item = ensureStatusItem()
+        guard let button = item.button else { return }
+        let summary = MenuBarQuotaSummary(configuration: configuration, accounts: accounts)
+        let image = MenuBarStatusImageRenderer.render(
+            configuration: configuration,
+            summary: summary,
+            usesApplicationIconForGlobalScope: true
+        )
+        let accessibilityText = tooltip(summary: summary, language: language)
+
+        item.length = max(image.size.width + 8, NSStatusItem.squareLength)
+        button.image = image
+        button.imagePosition = .imageOnly
+        button.imageScaling = .scaleNone
+        button.toolTip = accessibilityText
+        button.setAccessibilityLabel(accessibilityText)
+    }
+
+    private func ensureStatusItem() -> NSStatusItem {
+        if let statusItem {
+            return statusItem
+        }
+
+        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        if let button = item.button {
+            button.target = self
+            button.action = #selector(togglePopover(_:))
+            button.sendAction(on: [.leftMouseUp])
+        }
+        statusItem = item
+        return item
+    }
+
+    private func removeStatusItem() {
+        closePopover()
+        guard let statusItem else { return }
+        NSStatusBar.system.removeStatusItem(statusItem)
+        self.statusItem = nil
+    }
+
+    private func showPopover(relativeTo button: NSStatusBarButton) {
+        guard !popover.isShown else { return }
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        popover.contentViewController?.view.window?.makeKey()
+        installEventMonitors()
+    }
+
+    private func closePopover() {
+        if popover.isShown {
+            popover.performClose(nil)
+        }
+        removeEventMonitors()
+    }
+
+    private func installEventMonitors() {
+        removeEventMonitors()
+
+        localEventMonitor = NSEvent.addLocalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown]
+        ) { [weak self] event in
+            guard let self, self.popover.isShown else { return event }
+            let popoverWindow = self.popover.contentViewController?.view.window
+            let statusWindow = self.statusItem?.button?.window
+            if event.window !== popoverWindow, event.window !== statusWindow {
+                self.closePopover()
+            }
+            return event
+        }
+
+        globalEventMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown]
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.closePopover()
+            }
+        }
+    }
+
+    private func removeEventMonitors() {
+        if let localEventMonitor {
+            NSEvent.removeMonitor(localEventMonitor)
+            self.localEventMonitor = nil
+        }
+        if let globalEventMonitor {
+            NSEvent.removeMonitor(globalEventMonitor)
+            self.globalEventMonitor = nil
+        }
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        removeEventMonitors()
+    }
+
+    private func tooltip(summary: MenuBarQuotaSummary, language: AppLanguage) -> String {
+        if let primary = summary.primary {
+            return language.text(
+                "CPA 配额：剩余 \(primary.remainingPercentage)%。点击查看详情。",
+                "CPA quota: \(primary.remainingPercentage)% remaining. Click for details."
+            )
+        }
+        return language.text(
+            "CPA 配额：暂无数据。点击查看详情。",
+            "CPA quota: no data. Click for details."
+        )
     }
 }
 
