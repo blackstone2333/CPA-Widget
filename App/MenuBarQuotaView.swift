@@ -57,7 +57,7 @@ final class MenuBarStatusController: NSObject, NSPopoverDelegate {
 
         model.$menuBarConfiguration
             .combineLatest(model.$accountQuota, model.$language)
-            .receive(on: RunLoop.main)
+            .dropFirst()
             .sink { [weak self] configuration, accounts, language in
                 self?.updateStatusItem(
                     configuration: configuration,
@@ -66,6 +66,15 @@ final class MenuBarStatusController: NSObject, NSPopoverDelegate {
                 )
             }
             .store(in: &cancellables)
+
+        // Render synchronously once during launch. Deferring the first value
+        // through RunLoop.main can leave the status item absent until another
+        // setting change (such as toggling Show) wakes the update pipeline.
+        updateStatusItem(
+            configuration: model.menuBarConfiguration,
+            accounts: model.accountQuota,
+            language: model.language
+        )
     }
 
     @objc private func togglePopover(_ sender: NSStatusBarButton) {
@@ -87,6 +96,7 @@ final class MenuBarStatusController: NSObject, NSPopoverDelegate {
         }
 
         let item = ensureStatusItem()
+        item.isVisible = true
         guard let button = item.button else { return }
         let summary = MenuBarQuotaSummary(configuration: configuration, accounts: accounts)
         let image = MenuBarStatusImageRenderer.render(
@@ -97,11 +107,15 @@ final class MenuBarStatusController: NSObject, NSPopoverDelegate {
         let accessibilityText = tooltip(summary: summary, language: language)
 
         item.length = max(image.size.width + 8, NSStatusItem.squareLength)
+        button.isHidden = false
+        button.alphaValue = 1
+        button.image = nil
         button.image = image
         button.imagePosition = .imageOnly
         button.imageScaling = .scaleNone
         button.toolTip = accessibilityText
         button.setAccessibilityLabel(accessibilityText)
+        button.needsDisplay = true
     }
 
     private func ensureStatusItem() -> NSStatusItem {
