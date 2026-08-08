@@ -20,7 +20,7 @@
 
 CPA Widget reads subscription quotas through the CLIProxyAPI Management API, shows each account's remaining percentage and reset windows, and brings the most useful information to the macOS menu bar and desktop. Codex is enabled by default; every other provider is optional.
 
-> Current version: v0.5.8. Requires macOS 14 Sonoma or later.
+> Current version: v0.5.9. Requires macOS 14 Sonoma or later.
 
 ## Screenshots
 
