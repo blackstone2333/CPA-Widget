@@ -143,7 +143,21 @@ final class MenuBarStatusController: NSObject, NSPopoverDelegate {
     private func showPopover(relativeTo button: NSStatusBarButton) {
         guard !popover.isShown else { return }
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-        popover.contentViewController?.view.window?.makeKey()
+        if let window = popover.contentViewController?.view.window {
+            // NSPopover creates a normal application window by default. Give
+            // this menu-bar card explicit eligibility to appear over another
+            // application's native full-screen Space without activating CPA
+            // Widget and switching the user away from that Space.
+            window.collectionBehavior = [
+                .canJoinAllApplications,
+                .transient,
+                .ignoresCycle,
+                .fullScreenAuxiliary
+            ]
+            window.level = .popUpMenu
+            window.orderFrontRegardless()
+            window.makeKey()
+        }
         installEventMonitors()
     }
 
