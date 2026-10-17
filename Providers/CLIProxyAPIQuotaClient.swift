@@ -280,7 +280,7 @@ actor CLIProxyAPIQuotaClient: QuotaFetchingClient {
                     headers: [
                         "Authorization": "Bearer $TOKEN$",
                         "Content-Type": "application/json",
-                        "User-Agent": "antigravity/1.11.5 windows/amd64"
+                        "User-Agent": "antigravity/hub/2.23.0 darwin/arm64"
                     ],
                     body: body
                 )
